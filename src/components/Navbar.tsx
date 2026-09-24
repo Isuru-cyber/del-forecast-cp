@@ -83,7 +83,7 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-navy-700 bg-white/95 dark:bg-navy-900/95 backdrop-blur shadow-sm">
       <div className="max-w-[1750px] mx-auto px-2 sm:px-4 lg:px-6">
-        <div className="flex items-center justify-between py-2 gap-2 flex-nowrap overflow-x-auto no-scrollbar">
+        <div className="flex items-center justify-between py-2 gap-2 flex-nowrap">
           
           {/* Logo / Brand Name: Strictly single line, compact executive style */}
           <div className="flex items-center shrink-0">
@@ -208,43 +208,51 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
             {/* Multiple Themes Selector Dropdown */}
             <div className="relative shrink-0">
               <button
+                type="button"
                 onClick={() => setShowThemeMenu(!showThemeMenu)}
                 title="Change Theme"
-                className="flex items-center space-x-1 px-2 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-navy-800 dark:hover:bg-navy-700 border border-slate-200 dark:border-navy-700 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-all whitespace-nowrap"
+                className="flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-navy-800 dark:hover:bg-navy-700 border border-slate-200 dark:border-navy-700 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-all whitespace-nowrap shadow-2xs"
               >
                 <Palette className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                 <span className="hidden lg:inline">Theme</span>
               </button>
 
               {showThemeMenu && (
-                <div
-                  className="absolute right-0 mt-2 w-44 bg-white dark:bg-navy-800 rounded-xl shadow-xl border border-slate-200 dark:border-navy-700 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
-                  onMouseLeave={() => setShowThemeMenu(false)}
-                >
-                  <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Select Theme
+                <>
+                  {/* Backdrop for outside click dismiss */}
+                  <div
+                    className="fixed inset-0 z-40 bg-transparent"
+                    onClick={() => setShowThemeMenu(false)}
+                  />
+                  <div
+                    className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-navy-800 rounded-xl shadow-2xl border border-slate-200 dark:border-navy-700 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150 ring-1 ring-black/5"
+                  >
+                    <div className="px-3 py-1.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-navy-700/60 mb-1">
+                      Select Theme
+                    </div>
+                    {themes.map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => {
+                          setTheme(t.id);
+                          setShowThemeMenu(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-xs text-left transition-colors ${
+                          theme === t.id
+                            ? 'bg-blue-50 dark:bg-navy-700 font-bold text-blue-700 dark:text-blue-300'
+                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-navy-700/60'
+                        }`}
+                      >
+                        <span className="flex items-center space-x-2.5">
+                          <span className="text-sm">{t.icon}</span>
+                          <span className="font-medium">{t.label}</span>
+                        </span>
+                        {theme === t.id && <Check className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+                      </button>
+                    ))}
                   </div>
-                  {themes.map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => {
-                        setTheme(t.id);
-                        setShowThemeMenu(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-3 py-1.5 text-xs text-left transition-colors ${
-                        theme === t.id
-                          ? 'bg-blue-50 dark:bg-navy-700 font-bold text-blue-700 dark:text-blue-300'
-                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-navy-700/60'
-                      }`}
-                    >
-                      <span className="flex items-center space-x-2">
-                        <span>{t.icon}</span>
-                        <span>{t.label}</span>
-                      </span>
-                      {theme === t.id && <Check className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
-                    </button>
-                  ))}
-                </div>
+                </>
               )}
             </div>
 
