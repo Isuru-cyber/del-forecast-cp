@@ -279,7 +279,7 @@ export function PivotMatrix({ report, filter }: PivotMatrixProps) {
               }}
               className="sticky bg-blue-100 dark:bg-[#1a3356] border-t-2 border-r-2 border-slate-300 dark:border-navy-600 px-3 font-bold text-blue-950 dark:text-white text-[11px] uppercase tracking-wide shadow-[3px_0_6px_-2px_rgba(0,0,0,0.2)]"
             >
-              TOTAL ({filter})
+              TOTAL ({filter}){search.trim() ? ` · Filtered (${filteredCustomers.length})` : ''}
             </td>
             {dates.map((date) => {
               const t = dateTotals[date];
@@ -398,7 +398,7 @@ export function PivotMatrix({ report, filter }: PivotMatrixProps) {
         </span>
 
         <button
-          onClick={() => exportForecastToExcel(report, filter)}
+          onClick={() => exportForecastToExcel(report, filter, search)}
           className="flex items-center space-x-1 px-3 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-navy-700 dark:hover:bg-navy-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold transition-all"
         >
           <Download className="w-3.5 h-3.5" />

@@ -1,7 +1,7 @@
 import * as XLSX from 'xlsx';
 import { ReportData, CustomerFilter } from './types';
 
-export function exportForecastToExcel(report: ReportData, filter: CustomerFilter = 'ALL') {
+export function exportForecastToExcel(report: ReportData, filter: CustomerFilter = 'ALL', searchQuery?: string) {
   const wb = XLSX.utils.book_new();
   const { dates, data, customerSummaries, dateSummaries, grandTotal, directTotal, indirectTotal } = report;
 
@@ -11,6 +11,11 @@ export function exportForecastToExcel(report: ReportData, filter: CustomerFilter
     filteredCustSummaries = customerSummaries.filter(c => c.type === 'DIRECT');
   } else if (filter === 'INDIRECT') {
     filteredCustSummaries = customerSummaries.filter(c => c.type === 'INDIRECT');
+  }
+
+  if (searchQuery && searchQuery.trim()) {
+    const q = searchQuery.trim().toLowerCase();
+    filteredCustSummaries = filteredCustSummaries.filter(c => c.label.toLowerCase().includes(q));
   }
 
   const filteredCustNames = filteredCustSummaries.map(c => c.label);

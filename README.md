@@ -68,8 +68,8 @@ An enterprise-grade, C-Level delivery forecast and demand velocity analytics pla
 3. **Configure Environment Variables**:
    Create a `.env.local` file:
    ```env
-   DATABASE_URL="postgresql://postgres.gljwhjmftlcimsuhxcnc:9tGjUes8DO5Xwfmz@aws-0-ap-southeast-2.pooler.supabase.com:6543/postgres"
-   NEXT_PUBLIC_SUPABASE_URL="https://gljwhjmftlcimsuhxcnc.supabase.co"
+   DATABASE_URL="postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@[YOUR-HOST]:6543/postgres"
+   NEXT_PUBLIC_SUPABASE_URL="https://[YOUR-PROJECT-REF].supabase.co"
    ```
 
 4. **Run the development server**:
@@ -86,6 +86,6 @@ An enterprise-grade, C-Level delivery forecast and demand velocity analytics pla
 2. Go to [vercel.com](https://vercel.com) and click **"Add New Project"**.
 3. Import the `del-forecast-cp` repository.
 4. Under **Environment Variables**, add:
-   - `DATABASE_URL`: `postgresql://postgres.gljwhjmftlcimsuhxcnc:9tGjUes8DO5Xwfmz@aws-0-ap-southeast-2.pooler.supabase.com:6543/postgres`
-   - `NEXT_PUBLIC_SUPABASE_URL`: `https://gljwhjmftlcimsuhxcnc.supabase.co`
+   - `DATABASE_URL`: `postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@[YOUR-HOST]:6543/postgres`
+   - `NEXT_PUBLIC_SUPABASE_URL`: `https://[YOUR-PROJECT-REF].supabase.co`
 5. Click **Deploy**. Your app will be live on a production URL in ~1 minute!

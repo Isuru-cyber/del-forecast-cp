@@ -62,7 +62,7 @@ export function KPICards({ report, filter }: KPICardsProps) {
             {filter === 'ALL' ? 'Total Portfolio' : `${filter} Portfolio`}
           </span>
           <span className="text-[10px] font-mono bg-blue-500/20 text-blue-200 px-2 py-0.5 rounded-full border border-blue-400/20">
-            {report.customers.length} Accounts
+            {sortedAccounts.length} Accounts
           </span>
         </div>
         <div className="space-y-0.5">
@@ -139,7 +139,7 @@ export function KPICards({ report, filter }: KPICardsProps) {
             Top 5 Concentration
           </span>
           <span className="text-[10px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full border border-purple-200 dark:border-purple-800/50">
-            {top5ValShare}% of Total
+            {top5ValShare}% of {filter === 'ALL' ? 'Total' : filter === 'DIRECT' ? 'Direct' : 'Local'}
           </span>
         </div>
         <div className="space-y-0.5">

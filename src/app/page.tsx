@@ -62,6 +62,17 @@ export default function DashboardPage() {
     }).format(num);
   };
 
+  const formatCompactCurrency = (num: number) => {
+    if (!num || isNaN(num)) return '$0';
+    if (num >= 1_000_000) {
+      return `$${(num / 1_000_000).toFixed(2)}M`;
+    }
+    if (num >= 1_000) {
+      return `$${(num / 1_000).toFixed(1)}k`;
+    }
+    return `$${Math.round(num)}`;
+  };
+
   const monthKeyToLabel = (key: string) => {
     const [y, m] = key.split('-').map(Number);
     const d = new Date(y, m - 1, 1);
@@ -626,7 +637,7 @@ export default function DashboardPage() {
                       {/* Center Metric */}
                       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                         <span className="text-sm font-extrabold text-blue-700 dark:text-blue-400 leading-none">
-                          ${formatNumber(horizonData.current.value > 0 ? horizonData.current.value : horizonData.totalVal).slice(0, 5)}k
+                          {formatCompactCurrency(horizonData.current.value > 0 ? horizonData.current.value : horizonData.totalVal)}
                         </span>
                         <span className="text-[8px] uppercase font-bold text-slate-400 tracking-wider">
                           Horizon

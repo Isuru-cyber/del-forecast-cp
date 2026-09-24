@@ -31,6 +31,7 @@ export default function UploadPage() {
 
   const [ouFile, setOuFile] = useState<File | null>(null);
   const [stFile, setStFile] = useState<File | null>(null);
+  const [inputKey, setInputKey] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,6 +73,11 @@ export default function UploadPage() {
   }, []);
 
   const handleProcessData = async () => {
+    if (loadingCusts) {
+      setError('Please wait until the customer master database finishes loading.');
+      return;
+    }
+
     if (!ouFile || !stFile) {
       setError('Please select both Order Outstanding (OU) and Shipment Tracker (ST) files.');
       return;
@@ -99,7 +105,7 @@ export default function UploadPage() {
       if (allMissing.length > 0) {
         const initialMap: Record<string, CustomerType> = {};
         allMissing.forEach(c => {
-          initialMap[c] = 'DIRECT';
+          initialMap[c] = missingClassification[c] || 'INDIRECT';
         });
         setMissingCustomers(allMissing);
         setMissingClassification(initialMap);
@@ -161,7 +167,7 @@ export default function UploadPage() {
 
     const newCustomersList = missingCustomers.map(name => ({
       name,
-      type: missingClassification[name] || 'DIRECT',
+      type: missingClassification[name] || 'INDIRECT',
     }));
 
     await finalizeUpload(
@@ -179,6 +185,7 @@ export default function UploadPage() {
     setPendingUploadData(null);
     setMissingCustomers([]);
     setShowModal(false);
+    setInputKey(k => k + 1);
   };
 
   return (
@@ -220,6 +227,7 @@ export default function UploadPage() {
               </label>
               <div className="relative border-2 border-dashed rounded-xl p-6 text-center border-slate-200 dark:border-navy-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50/40 dark:hover:bg-navy-800 transition-all cursor-pointer">
                 <input
+                  key={`ou-${inputKey}`}
                   type="file"
                   accept=".xlsx, .xls"
                   onChange={(e) => {
@@ -248,6 +256,7 @@ export default function UploadPage() {
               </label>
               <div className="relative border-2 border-dashed rounded-xl p-6 text-center border-slate-200 dark:border-navy-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50/40 dark:hover:bg-navy-800 transition-all cursor-pointer">
                 <input
+                  key={`st-${inputKey}`}
                   type="file"
                   accept=".xlsx, .xls"
                   onChange={(e) => {
@@ -282,13 +291,18 @@ export default function UploadPage() {
           <div className="flex flex-wrap items-center justify-center gap-3 pt-3 border-t border-slate-100 dark:border-navy-700">
             <button
               onClick={handleProcessData}
-              disabled={isProcessing}
+              disabled={isProcessing || loadingCusts}
               className="flex items-center space-x-1.5 bg-blue-700 hover:bg-blue-800 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider shadow transition-all"
             >
               {isProcessing ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
                   <span>Processing Forecast...</span>
+                </>
+              ) : loadingCusts ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Loading Customer Master...</span>
                 </>
               ) : (
                 <>
@@ -326,9 +340,39 @@ export default function UploadPage() {
                 </div>
               </div>
 
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-navy-700">
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                  Bulk Classify:
+                </p>
+                <div className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const bulk: Record<string, CustomerType> = {};
+                      missingCustomers.forEach((c) => (bulk[c] = 'DIRECT'));
+                      setMissingClassification(bulk);
+                    }}
+                    className="px-2.5 py-1 text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 rounded border border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 transition-colors"
+                  >
+                    All Direct
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const bulk: Record<string, CustomerType> = {};
+                      missingCustomers.forEach((c) => (bulk[c] = 'INDIRECT'));
+                      setMissingClassification(bulk);
+                    }}
+                    className="px-2.5 py-1 text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 rounded border border-indigo-300 dark:border-indigo-800 hover:bg-indigo-100 transition-colors"
+                  >
+                    All Local
+                  </button>
+                </div>
+              </div>
+
               <div className="space-y-2 max-h-[260px] overflow-y-auto pr-1.5 custom-scrollbar">
                 {missingCustomers.map((cust) => {
-                  const currentChoice = missingClassification[cust] || 'DIRECT';
+                  const currentChoice = missingClassification[cust] || 'INDIRECT';
                   return (
                     <div
                       key={cust}

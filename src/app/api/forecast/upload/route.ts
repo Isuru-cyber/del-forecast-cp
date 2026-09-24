@@ -6,7 +6,7 @@ import { invalidateForecastCache } from '@/lib/forecast-cache';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
-  const client = await pool.connect();
+  let client;
   try {
     const body = await request.json();
     const { records, newCustomers, ouFilename, stFilename, uploadedBy = 'Admin' } = body;
@@ -18,9 +18,10 @@ export async function POST(request: Request) {
       );
     }
 
+    client = await pool.connect();
     await client.query('BEGIN');
 
-    // 1. Insert new customers if provided
+    // 1. Insert new customers if provided (do not overwrite existing classified customers)
     if (newCustomers && Array.isArray(newCustomers) && newCustomers.length > 0) {
       for (const nc of newCustomers) {
         if (nc.name && nc.type) {
@@ -29,7 +30,9 @@ export async function POST(request: Request) {
             `INSERT INTO customers (name, type) 
              VALUES ($1, $2) 
              ON CONFLICT (name) 
-             DO UPDATE SET type = EXCLUDED.type, updated_at = NOW();`,
+             DO UPDATE SET 
+               type = CASE WHEN customers.type = 'UNMAPPED' THEN EXCLUDED.type ELSE customers.type END,
+               updated_at = NOW();`,
             [cName, nc.type.toUpperCase()]
           );
         }
@@ -112,13 +115,21 @@ export async function POST(request: Request) {
       totalVal,
     });
   } catch (err: any) {
-    await client.query('ROLLBACK');
+    if (client) {
+      try {
+        await client.query('ROLLBACK');
+      } catch (rbErr) {
+        console.error('Error rolling back transaction:', rbErr);
+      }
+    }
     console.error('Error during forecast upload transaction:', err);
     return NextResponse.json(
       { success: false, error: err.message || 'Failed to save forecast data' },
       { status: 500 }
     );
   } finally {
-    client.release();
+    if (client) {
+      client.release();
+    }
   }
 }
