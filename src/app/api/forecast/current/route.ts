@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { CustomerType, PivotCell, ReportData } from '@/lib/types';
+import { getCachedReport, setCachedReport } from '@/lib/forecast-cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +21,15 @@ export async function GET() {
     }
 
     const batch = batchRes.rows[0];
+
+    // Check fast in-memory cache
+    const cached = getCachedReport(batch.id);
+    if (cached) {
+      return NextResponse.json(
+        { success: true, report: cached },
+        { headers: { 'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=59' } }
+      );
+    }
 
     // 2. Fetch all records for this active batch joined with customer master for dynamic classification
     const recordsRes = await query(
@@ -118,7 +128,12 @@ export async function GET() {
       },
     };
 
-    return NextResponse.json({ success: true, report });
+    setCachedReport(batch.id, report);
+
+    return NextResponse.json(
+      { success: true, report },
+      { headers: { 'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=59' } }
+    );
   } catch (err: any) {
     console.error('Error fetching current forecast:', err);
     return NextResponse.json(

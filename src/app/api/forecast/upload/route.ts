@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
 import { CustomerType } from '@/lib/types';
+import { invalidateForecastCache } from '@/lib/forecast-cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -101,6 +102,7 @@ export async function POST(request: Request) {
     }
 
     await client.query('COMMIT');
+    invalidateForecastCache();
 
     return NextResponse.json({
       success: true,

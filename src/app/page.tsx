@@ -269,9 +269,9 @@ export default function DashboardPage() {
             <KPICards report={report} filter={customerFilter} />
 
             {/* Horizon Load Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {horizonCards.map((c) => (
-                <div key={c.sub} className={`rounded-xl ${c.bg} border ${c.border} p-4.5 min-h-[135px] shadow-sm flex flex-col justify-between`}>
+                <div key={c.sub} className={`rounded-xl ${c.bg} border ${c.border} p-3.5 sm:p-4 min-h-[105px] shadow-sm flex flex-col justify-between`}>
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <span className={`text-[10px] font-bold ${c.text} uppercase tracking-wider flex items-center gap-1.5`}>

@@ -64,7 +64,7 @@ export function PivotMatrix({ report, filter }: PivotMatrixProps) {
   const renderTableContent = (isFs: boolean = false) => (
     <div
       className={`pivot-container custom-scrollbar w-full ${
-        isFs ? 'h-full max-h-none' : 'max-h-[72vh]'
+        isFs ? 'flex-1 min-h-0 overflow-auto' : 'max-h-[72vh] overflow-auto'
       }`}
     >
       <table className="w-full border-separate border-spacing-0">
@@ -374,13 +374,11 @@ export function PivotMatrix({ report, filter }: PivotMatrixProps) {
         title={`Pivot Matrix (${filter} Customers - ${filteredCustomers.length} Accounts)`}
         noPadding={true}
       >
-        <div className="w-full h-full flex flex-col bg-white dark:bg-navy-800">
+        <div className="w-full h-full flex flex-col bg-white dark:bg-navy-800 overflow-hidden">
           <div className="shrink-0">
             {renderToolbar(true)}
           </div>
-          <div className="flex-1 min-h-0 w-full overflow-hidden">
-            {renderTableContent(true)}
-          </div>
+          {renderTableContent(true)}
         </div>
       </FullscreenModal>
     </div>

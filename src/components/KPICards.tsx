@@ -53,10 +53,10 @@ export function KPICards({ report, filter }: KPICardsProps) {
   const top1Cust = sortedAccounts[0]?.label || 'None';
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
       {/* 1. Grand Total Card */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-navy-900 to-blue-950 text-white rounded-xl p-5 shadow-sm border border-slate-800 dark:border-navy-700 min-h-[148px] flex flex-col justify-between">
-        <div className="flex items-center justify-between mb-2">
+      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-navy-900 to-blue-950 text-white rounded-xl p-3.5 sm:p-4 shadow-sm border border-slate-800 dark:border-navy-700 min-h-[115px] flex flex-col justify-between">
+        <div className="flex items-center justify-between mb-1.5">
           <span className="text-[11px] font-bold uppercase tracking-wider text-blue-300 flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-blue-400" />
             {filter === 'ALL' ? 'Total Portfolio' : `${filter} Portfolio`}
@@ -65,12 +65,12 @@ export function KPICards({ report, filter }: KPICardsProps) {
             {report.customers.length} Accounts
           </span>
         </div>
-        <div className="space-y-1">
-          <p className="text-[10px] uppercase font-semibold text-slate-400">Total Value (USD)</p>
+        <div className="space-y-0.5">
+          <p className="text-[9px] uppercase font-semibold text-slate-400">Total Value (USD)</p>
           <p className="text-xl font-bold text-white tracking-tight">
             ${formatNum(activeValue)}
           </p>
-          <div className="flex items-center justify-between pt-2 border-t border-slate-800/80">
+          <div className="flex items-center justify-between pt-1.5 border-t border-slate-800/80">
             <span className="text-[10px] text-slate-400 font-medium">Total Volume</span>
             <span className="text-xs font-mono font-bold text-blue-300">{formatNum(activeQty)} KG</span>
           </div>
@@ -78,12 +78,12 @@ export function KPICards({ report, filter }: KPICardsProps) {
       </div>
 
       {/* 2. Direct (Export) Card */}
-      <div className={`bg-white dark:bg-navy-800 rounded-xl p-5 shadow-sm border transition-all min-h-[148px] flex flex-col justify-between ${
+      <div className={`bg-white dark:bg-navy-800 rounded-xl p-3.5 sm:p-4 shadow-sm border transition-all min-h-[115px] flex flex-col justify-between ${
         filter === 'DIRECT'
           ? 'ring-2 ring-emerald-500 border-emerald-400 dark:border-emerald-500'
           : 'border-slate-200 dark:border-navy-700'
       }`}>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-1.5">
           <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
             <Globe2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             Direct (Export)
@@ -92,12 +92,12 @@ export function KPICards({ report, filter }: KPICardsProps) {
             {directValShare}% Share
           </span>
         </div>
-        <div className="space-y-1">
-          <p className="text-[10px] uppercase font-semibold text-slate-400 dark:text-slate-400">Forecast Value</p>
+        <div className="space-y-0.5">
+          <p className="text-[9px] uppercase font-semibold text-slate-400 dark:text-slate-400">Forecast Value</p>
           <p className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
             ${formatNum(directTotal.value)}
           </p>
-          <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-navy-700">
+          <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-navy-700">
             <span className="text-[10px] text-slate-400 font-medium">Volume ({directQtyShare}%)</span>
             <span className="text-xs font-mono font-bold text-emerald-700 dark:text-emerald-400">{formatNum(directTotal.qty)} KG</span>
           </div>
@@ -105,12 +105,12 @@ export function KPICards({ report, filter }: KPICardsProps) {
       </div>
 
       {/* 3. Indirect (Local) Card */}
-      <div className={`bg-white dark:bg-navy-800 rounded-xl p-5 shadow-sm border transition-all min-h-[148px] flex flex-col justify-between ${
+      <div className={`bg-white dark:bg-navy-800 rounded-xl p-3.5 sm:p-4 shadow-sm border transition-all min-h-[115px] flex flex-col justify-between ${
         filter === 'INDIRECT'
           ? 'ring-2 ring-indigo-500 border-indigo-400 dark:border-indigo-500'
           : 'border-slate-200 dark:border-navy-700'
       }`}>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-1.5">
           <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 flex items-center gap-1.5">
             <Building2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
             Indirect (Local)
@@ -119,12 +119,12 @@ export function KPICards({ report, filter }: KPICardsProps) {
             {indirectValShare}% Share
           </span>
         </div>
-        <div className="space-y-1">
-          <p className="text-[10px] uppercase font-semibold text-slate-400 dark:text-slate-400">Forecast Value</p>
+        <div className="space-y-0.5">
+          <p className="text-[9px] uppercase font-semibold text-slate-400 dark:text-slate-400">Forecast Value</p>
           <p className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
             ${formatNum(indirectTotal.value)}
           </p>
-          <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-navy-700">
+          <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-navy-700">
             <span className="text-[10px] text-slate-400 font-medium">Volume ({indirectQtyShare}%)</span>
             <span className="text-xs font-mono font-bold text-indigo-700 dark:text-indigo-400">{formatNum(indirectTotal.qty)} KG</span>
           </div>
@@ -132,8 +132,8 @@ export function KPICards({ report, filter }: KPICardsProps) {
       </div>
 
       {/* 4. Key Account Concentration Risk Card */}
-      <div className="bg-white dark:bg-navy-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-navy-700 min-h-[148px] flex flex-col justify-between">
-        <div className="flex items-center justify-between mb-2">
+      <div className="bg-white dark:bg-navy-800 rounded-xl p-3.5 sm:p-4 shadow-sm border border-slate-200 dark:border-navy-700 min-h-[115px] flex flex-col justify-between">
+        <div className="flex items-center justify-between mb-1.5">
           <span className="text-[11px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400 flex items-center gap-1.5">
             <TrendingUp className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
             Top 5 Concentration
@@ -142,12 +142,12 @@ export function KPICards({ report, filter }: KPICardsProps) {
             {top5ValShare}% of Total
           </span>
         </div>
-        <div className="space-y-1">
-          <p className="text-[10px] uppercase font-semibold text-slate-400 dark:text-slate-400">Top 5 Accounts Value</p>
+        <div className="space-y-0.5">
+          <p className="text-[9px] uppercase font-semibold text-slate-400 dark:text-slate-400">Top 5 Accounts Value</p>
           <p className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
             ${formatNum(top5Value)}
           </p>
-          <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-navy-700">
+          <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-navy-700">
             <span className="text-[10px] text-slate-400 font-medium truncate max-w-[150px]" title={`#1 Account: ${top1Cust}`}>
               #1 {top1Cust}
             </span>

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { ReportData, CustomerFilter, DateSummary, TrendBuckets, getActiveForecastMonthKey } from '@/lib/types';
-import { UserCheck, AlertCircle, Clock, CheckCircle2, Layers, Maximize2, Minimize2, ArrowLeft } from 'lucide-react';
+import { UserCheck, Maximize2, Minimize2, ArrowLeft } from 'lucide-react';
 import { FullscreenModal } from './FullscreenModal';
 
 interface CustomerWiseTAProps {
@@ -132,48 +132,7 @@ export function CustomerWiseTA({ report, filter }: CustomerWiseTAProps) {
     value: buckets.summary.past.value + buckets.summary.current.value + buckets.summary.future.value,
   };
 
-  const cards = [
-    {
-      title: 'Previous Months',
-      sub: 'Overdue Backlog',
-      totals: buckets.summary.past,
-      bg: 'bg-amber-50/70 dark:bg-amber-950/40',
-      border: 'border-amber-200 dark:border-amber-800/50',
-      text: 'text-amber-900 dark:text-amber-300',
-      dot: 'bg-amber-500',
-      icon: <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />,
-    },
-    {
-      title: buckets.currentMonthLabel,
-      sub: 'Current Month',
-      totals: buckets.summary.current,
-      bg: 'bg-blue-50/70 dark:bg-blue-950/40',
-      border: 'border-blue-200 dark:border-blue-800/50',
-      text: 'text-blue-900 dark:text-blue-300',
-      dot: 'bg-blue-600',
-      icon: <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
-    },
-    {
-      title: 'Next Months',
-      sub: 'Future Pipeline',
-      totals: buckets.summary.future,
-      bg: 'bg-emerald-50/70 dark:bg-emerald-950/40',
-      border: 'border-emerald-200 dark:border-emerald-800/50',
-      text: 'text-emerald-900 dark:text-emerald-300',
-      dot: 'bg-emerald-500',
-      icon: <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
-    },
-    {
-      title: 'Total Demand',
-      sub: 'Total Horizon',
-      totals: grandTotal,
-      bg: 'bg-slate-100/80 dark:bg-navy-800',
-      border: 'border-slate-300 dark:border-navy-700',
-      text: 'text-slate-900 dark:text-white',
-      dot: 'bg-slate-700 dark:bg-slate-400',
-      icon: <Layers className="w-4 h-4 text-slate-700 dark:text-slate-300" />,
-    },
-  ];
+
 
   const renderDailyChart = (
     data: DateSummary[],
@@ -291,31 +250,7 @@ export function CustomerWiseTA({ report, filter }: CustomerWiseTAProps) {
         </div>
       </div>
 
-      {/* Selected Customer Horizon Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {cards.map((c) => (
-          <div key={c.sub} className={`rounded-xl ${c.bg} border ${c.border} p-3.5`}>
-            <div className="flex items-center justify-between mb-2">
-              <span className={`text-[10px] font-bold ${c.text} uppercase tracking-widest flex items-center gap-1`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`}></span>
-                {c.sub}
-              </span>
-              {c.icon}
-            </div>
-            <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">{c.title}</p>
-            <div className="flex justify-between items-end pt-1.5 border-t border-slate-200/50 dark:border-navy-700">
-              <div>
-                <p className="text-[9px] text-slate-400 uppercase font-semibold">Volume</p>
-                <p className={`text-sm font-bold ${c.text}`}>{formatNumber(c.totals.qty)} KG</p>
-              </div>
-              <div className="text-right">
-                <p className="text-[9px] text-slate-400 uppercase font-semibold">Value</p>
-                <p className={`text-sm font-bold ${c.text}`}>${formatNumber(c.totals.value)}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+
 
       {/* Selected Customer Daily Load Charts / Detail */}
       <div className="bg-white dark:bg-navy-800 rounded-xl shadow-sm border border-slate-200 dark:border-navy-700 p-4 space-y-4">

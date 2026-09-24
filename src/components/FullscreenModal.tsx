@@ -37,7 +37,7 @@ export function FullscreenModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-white dark:bg-navy-950 overflow-hidden w-screen h-screen m-0 p-0 animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-white dark:bg-navy-950 overflow-hidden w-full h-full m-0 p-0 animate-in fade-in duration-150">
       {/* 0 margin, 100% flush header bar */}
       <div className="w-full px-4 py-2 border-b border-slate-200 dark:border-navy-700 bg-slate-50 dark:bg-navy-900 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center space-x-2.5">

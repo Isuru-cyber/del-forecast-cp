@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { Customer } from '@/lib/types';
+import { invalidateForecastCache } from '@/lib/forecast-cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,6 +54,9 @@ export async function POST(request: Request) {
        WHERE UPPER(TRIM(TRAILING ',' FROM TRIM(customer_name))) = UPPER(TRIM($1));`,
       [trimmedName, upperType]
     );
+
+    // Invalidate cached report so next fetch returns fresh customer classification
+    invalidateForecastCache();
 
     return NextResponse.json({ success: true, customer: res.rows[0] });
   } catch (err: any) {
