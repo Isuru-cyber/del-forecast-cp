@@ -55,24 +55,28 @@ export function KPICards({ report, filter }: KPICardsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
       {/* 1. Grand Total Card */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-navy-900 to-blue-950 text-white rounded-xl p-3.5 sm:p-4 shadow-sm border border-slate-800 dark:border-navy-700 min-h-[115px] flex flex-col justify-between">
+      <div className={`bg-white dark:bg-navy-800 rounded-xl p-3.5 sm:p-4 shadow-sm border transition-all min-h-[115px] flex flex-col justify-between ${
+        filter === 'ALL'
+          ? 'ring-2 ring-blue-500 border-blue-400 dark:border-blue-500'
+          : 'border-slate-200 dark:border-navy-700'
+      }`}>
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-blue-300 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+          <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
             {filter === 'ALL' ? 'Total Portfolio' : `${filter} Portfolio`}
           </span>
-          <span className="text-[10px] font-mono bg-blue-500/20 text-blue-200 px-2 py-0.5 rounded-full border border-blue-400/20">
+          <span className="text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-800/50">
             {sortedAccounts.length} Accounts
           </span>
         </div>
         <div className="space-y-0.5">
-          <p className="text-[9px] uppercase font-semibold text-slate-400">Total Value (USD)</p>
-          <p className="text-xl font-bold text-white tracking-tight">
+          <p className="text-[9px] uppercase font-semibold text-slate-400 dark:text-slate-400">Total Value (USD)</p>
+          <p className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
             ${formatNum(activeValue)}
           </p>
-          <div className="flex items-center justify-between pt-1.5 border-t border-slate-800/80">
+          <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-navy-700">
             <span className="text-[10px] text-slate-400 font-medium">Total Volume</span>
-            <span className="text-xs font-mono font-bold text-blue-300">{formatNum(activeQty)} KG</span>
+            <span className="text-xs font-mono font-bold text-blue-700 dark:text-blue-400">{formatNum(activeQty)} KG</span>
           </div>
         </div>
       </div>
