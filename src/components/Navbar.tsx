@@ -87,11 +87,11 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
           
           {/* Logo / Brand Name: Strictly single line, compact executive style */}
           <div className="flex items-center shrink-0">
-            <LinkComponent href="/" className="flex items-center space-x-1.5 hover:opacity-95 transition-opacity">
-              <h1 className="font-black tracking-tight bg-gradient-to-r from-blue-800 via-indigo-600 to-blue-900 dark:from-blue-400 dark:via-sky-300 dark:to-indigo-300 bg-clip-text text-transparent text-sm sm:text-base uppercase select-none whitespace-nowrap">
+            <LinkComponent href="/" className="flex items-center space-x-1 sm:space-x-1.5 hover:opacity-95 transition-opacity">
+              <h1 className="hidden sm:inline-block font-black tracking-tight bg-gradient-to-r from-blue-800 via-indigo-600 to-blue-900 dark:from-blue-400 dark:via-sky-300 dark:to-indigo-300 bg-clip-text text-transparent text-sm sm:text-base uppercase select-none whitespace-nowrap">
                 DELIVERY FORECAST
               </h1>
-              <span className="px-1.5 py-0.5 text-[10px] font-black bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300 rounded border border-blue-200 dark:border-blue-800/60 tracking-wider whitespace-nowrap">
+              <span className="px-2 py-0.5 text-xs sm:text-[10px] font-black bg-blue-600 text-white rounded border border-blue-700 dark:border-blue-500 tracking-wider whitespace-nowrap shadow-xs">
                 CP
               </span>
             </LinkComponent>
@@ -101,7 +101,7 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
           <div className="flex items-center bg-slate-100 dark:bg-navy-800 p-0.5 rounded-xl border border-slate-200 dark:border-navy-700 shadow-inner shrink-0">
             <button
               onClick={() => setCustomerFilter('ALL')}
-              className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+              className={`flex items-center space-x-1 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                 customerFilter === 'ALL'
                   ? 'bg-white dark:bg-navy-700 text-slate-900 dark:text-white shadow-sm border border-slate-200/80 dark:border-navy-600 font-bold'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -113,7 +113,7 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
             <button
               onClick={() => setCustomerFilter('DIRECT')}
               title="Direct (Export)"
-              className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+              className={`flex items-center space-x-1 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                 customerFilter === 'DIRECT'
                   ? 'bg-emerald-600 text-white shadow-sm font-bold'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -125,7 +125,7 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
             <button
               onClick={() => setCustomerFilter('INDIRECT')}
               title="Indirect (Local)"
-              className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
+              className={`flex items-center space-x-1 px-2 sm:px-2.5 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${
                 customerFilter === 'INDIRECT'
                   ? 'bg-indigo-600 text-white shadow-sm font-bold'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -137,7 +137,7 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
           </div>
 
           {/* Right Navigation & Controls */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 flex-nowrap">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0 flex-nowrap">
             {/* Last update timestamp: compact and only visible on 2xl screens to preserve space */}
             {lastUpdated && (
               <div
@@ -161,7 +161,7 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
                 }`}
               >
                 <LayoutDashboard className="w-3.5 h-3.5" />
-                <span>Dashboard</span>
+                <span className="hidden min-[420px]:inline">Dashboard</span>
               </LinkComponent>
 
               <LinkComponent
@@ -173,7 +173,7 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
                 }`}
               >
                 <LineChart className="w-3.5 h-3.5" />
-                <span>Analysis</span>
+                <span className="hidden min-[420px]:inline">Analysis</span>
               </LinkComponent>
 
               {role === 'admin' && (
@@ -187,7 +187,7 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
                     }`}
                   >
                     <Users className="w-3.5 h-3.5" />
-                    <span>Customers</span>
+                    <span className="hidden min-[480px]:inline">Customers</span>
                   </LinkComponent>
 
                   <LinkComponent
@@ -199,7 +199,7 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
                     }`}
                   >
                     <Upload className="w-3.5 h-3.5" />
-                    <span>Upload</span>
+                    <span className="hidden min-[480px]:inline">Upload</span>
                   </LinkComponent>
                 </>
               )}
@@ -211,7 +211,7 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
                 type="button"
                 onClick={() => setShowThemeMenu(!showThemeMenu)}
                 title="Change Theme"
-                className="flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-navy-800 dark:hover:bg-navy-700 border border-slate-200 dark:border-navy-700 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-all whitespace-nowrap shadow-2xs"
+                className="flex items-center space-x-1 px-2 sm:px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-navy-800 dark:hover:bg-navy-700 border border-slate-200 dark:border-navy-700 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-all whitespace-nowrap shadow-2xs"
               >
                 <Palette className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                 <span className="hidden lg:inline">Theme</span>
@@ -256,8 +256,8 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
               )}
             </div>
 
-            {/* Role & Admin Access Control */}
-            <div className="flex items-center shrink-0">
+            {/* Role & Admin Access Control - Hidden on mobile view as requested */}
+            <div className="hidden sm:flex items-center shrink-0">
               {role === 'admin' ? (
                 <div className="flex items-center space-x-1 bg-amber-50 dark:bg-amber-950/60 p-0.5 rounded-xl border border-amber-300 dark:border-amber-700/60 shadow-xs">
                   <div className="flex items-center space-x-1 px-1.5 py-0.5 text-[11px] font-bold text-amber-800 dark:text-amber-300 whitespace-nowrap">

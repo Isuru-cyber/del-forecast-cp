@@ -258,7 +258,7 @@ export default function DashboardPage() {
         uploadedBy={report?.batchInfo?.uploaded_by}
       />
 
-      <main className="flex-1 max-w-[1750px] w-full mx-auto px-3 sm:px-6 py-4 space-y-4">
+      <main className="flex-1 max-w-[1750px] w-full mx-auto px-2.5 sm:px-6 py-3 sm:py-4 space-y-3 sm:space-y-4">
         {loading ? (
           <div className="py-32 flex flex-col items-center justify-center space-y-3">
             <Loader2 className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
@@ -473,10 +473,10 @@ export default function DashboardPage() {
                   <div className="mt-2 space-y-2 pt-2 border-t border-slate-100 dark:border-navy-800">
                     {/* 1. Value Share Progress Bar */}
                     <div className="space-y-1">
-                      <div className="flex justify-between items-center text-[10px]">
+                      <div className="flex flex-wrap justify-between items-center text-[10px] gap-0.5">
                         <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                          Value Share: <strong className="text-emerald-600 dark:text-emerald-400">Direct {portfolioDistribution.directValPct}%</strong> (${formatNumber(report.directTotal.value)})
+                          Value: <strong className="text-emerald-600 dark:text-emerald-400">Direct {portfolioDistribution.directValPct}%</strong> (${formatNumber(report.directTotal.value)})
                         </span>
                         <span className="font-semibold text-indigo-600 dark:text-indigo-400">
                           Local {portfolioDistribution.indirectValPct}% (${formatNumber(report.indirectTotal.value)})
@@ -498,10 +498,10 @@ export default function DashboardPage() {
 
                     {/* 2. Volume Share Progress Bar */}
                     <div className="space-y-1">
-                      <div className="flex justify-between items-center text-[10px]">
+                      <div className="flex flex-wrap justify-between items-center text-[10px] gap-0.5">
                         <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
                           <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                          Volume Share: <strong className="text-emerald-600 dark:text-emerald-400">Direct {portfolioDistribution.directQtyPct}%</strong> ({formatNumber(report.directTotal.qty)} KG)
+                          Volume: <strong className="text-emerald-600 dark:text-emerald-400">Direct {portfolioDistribution.directQtyPct}%</strong> ({formatNumber(report.directTotal.qty)} KG)
                         </span>
                         <span className="font-semibold text-indigo-600 dark:text-indigo-400">
                           Local {portfolioDistribution.indirectQtyPct}% ({formatNumber(report.indirectTotal.qty)} KG)
@@ -557,10 +557,10 @@ export default function DashboardPage() {
                     {topCustomers.map((cust, i) => (
                       <div
                         key={cust.label}
-                        className="flex items-center justify-between p-1.5 rounded-lg bg-slate-50/70 dark:bg-navy-800/60 hover:bg-blue-50/60 dark:hover:bg-navy-800 transition-colors text-xs"
+                        className="flex items-center justify-between p-1.5 rounded-lg bg-slate-50/70 dark:bg-navy-800/60 hover:bg-blue-50/60 dark:hover:bg-navy-800 transition-colors text-xs gap-1.5"
                       >
-                        <div className="flex items-center space-x-1.5 min-w-0">
-                          <span className="text-[10px] font-mono font-bold text-slate-400 w-4">
+                        <div className="flex items-center space-x-1.5 min-w-0 flex-1">
+                          <span className="text-[10px] font-mono font-bold text-slate-400 w-4 shrink-0">
                             #{i + 1}
                           </span>
                           <span
@@ -572,7 +572,7 @@ export default function DashboardPage() {
                           >
                             {cust.type === 'DIRECT' ? 'Dir' : 'Loc'}
                           </span>
-                          <span className="truncate max-w-[140px] font-semibold text-slate-800 dark:text-slate-200" title={cust.label}>
+                          <span className="truncate font-semibold text-slate-800 dark:text-slate-200" title={cust.label}>
                             {cust.label}
                           </span>
                         </div>
