@@ -97,18 +97,33 @@ export default function DashboardPage() {
     return [...filtered].sort((a, b) => b.value - a.value).slice(0, 8);
   }, [report, customerFilter]);
 
-  // Horizon Breakdown Calculations
+  // Horizon Breakdown Calculations (Based on Today's date)
   const horizonData = useMemo(() => {
-    if (!report) return { past: { qty: 0, value: 0 }, current: { qty: 0, value: 0 }, future: { qty: 0, value: 0 }, totalVal: 0 };
+    if (!report) return {
+      past: { qty: 0, value: 0 },
+      current: { qty: 0, value: 0 },
+      future: { qty: 0, value: 0 },
+      totalVal: 0,
+      remainingDispatchDaysCount: 0,
+      remainingQty: 0,
+      remainingVal: 0,
+    };
     const { customerSummaries, dates, data } = report;
 
     const filteredCustNames = customerSummaries
       .filter(c => customerFilter === 'ALL' || c.type === customerFilter)
       .map(c => c.label);
 
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
     const past = { qty: 0, value: 0 };
     const current = { qty: 0, value: 0 };
     const future = { qty: 0, value: 0 };
+
+    let remainingDispatchDaysCount = 0;
+    let remainingQty = 0;
+    let remainingVal = 0;
 
     dates.forEach(d => {
       let q = 0;
@@ -122,20 +137,29 @@ export default function DashboardPage() {
       });
 
       const mKey = d.slice(0, 7);
-      if (mKey === currentMonthKey) {
-        current.qty += q;
-        current.value += v;
-      } else if (mKey < currentMonthKey) {
+
+      // Overdue vs Current Month vs Next Months relative to Today
+      if (d < todayStr) {
         past.qty += q;
         past.value += v;
+      } else if (mKey === currentMonthKey) {
+        current.qty += q;
+        current.value += v;
       } else {
         future.qty += q;
         future.value += v;
       }
+
+      // Count remaining dispatch dates from today onwards with scheduled orders
+      if (d >= todayStr && (q > 0 || v > 0)) {
+        remainingDispatchDaysCount += 1;
+        remainingQty += q;
+        remainingVal += v;
+      }
     });
 
     const totalVal = past.value + current.value + future.value;
-    return { past, current, future, totalVal };
+    return { past, current, future, totalVal, remainingDispatchDaysCount, remainingQty, remainingVal };
   }, [report, customerFilter, currentMonthKey]);
 
   // Direct vs Indirect Percentages
@@ -154,15 +178,14 @@ export default function DashboardPage() {
   // Horizon Load Summary Cards
   const horizonCards = useMemo(() => {
     if (!report) return [];
-    const activeDaysCount = report.dates.length || 1;
-    const totalQtyAll = horizonData.past.qty + horizonData.current.qty + horizonData.future.qty;
-    const dailyAvgQty = Math.round(totalQtyAll / activeDaysCount);
-    const dailyAvgVal = Math.round(horizonData.totalVal / activeDaysCount);
+    const remainingDaysCount = horizonData.remainingDispatchDaysCount;
+    const dailyAvgQty = remainingDaysCount > 0 ? Math.round(horizonData.remainingQty / remainingDaysCount) : 0;
+    const dailyAvgVal = remainingDaysCount > 0 ? Math.round(horizonData.remainingVal / remainingDaysCount) : 0;
 
     return [
       {
-        title: 'Previous Months',
-        sub: 'Overdue Backlog',
+        title: 'Overdue Backlog',
+        sub: 'Past Due Shipments',
         totals: horizonData.past,
         bg: 'bg-amber-50/70 dark:bg-amber-950/40',
         border: 'border-amber-200 dark:border-amber-800/50',
@@ -194,7 +217,7 @@ export default function DashboardPage() {
         isVelocity: false,
       },
       {
-        title: `${report.dates.length} Active Dispatch Days`,
+        title: `${remainingDaysCount} Remaining Dispatch Day${remainingDaysCount === 1 ? '' : 's'}`,
         sub: 'Daily Dispatch Velocity',
         totals: {
           qty: dailyAvgQty,
