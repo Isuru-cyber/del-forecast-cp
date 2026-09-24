@@ -5,7 +5,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 html {
-  font-size: 13.5px; /* ~85% scale for dense executive layout */
+  font-size: 13.5px; /* ~85% scale for compact executive data density */
 }
 
 * {
@@ -27,14 +27,14 @@ code, pre, .font-mono {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #94a3b8;
+  background: #cbd5e1;
   border-radius: 4px;
 }
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #334155;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #94a3b8;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -47,7 +47,7 @@ code, pre, .font-mono {
 
 /* Sticky Pivot Grid */
 .pivot-container {
-  max-height: 74vh;
+  max-height: 72vh;
   overflow: auto;
 }
 .sticky-col-cust {
@@ -65,4 +65,20 @@ code, pre, .font-mono {
   top: 0;
   left: 0;
   z-index: 50;
+}
+
+/* Theme Variant Custom Overrides */
+html.theme-navy {
+  --color-canvas: #0b132b;
+  --color-surface: #132238;
+}
+
+html.theme-slate {
+  --color-canvas: #0f172a;
+  --color-surface: #1e293b;
+}
+
+html.theme-emerald {
+  --color-canvas: #051811;
+  --color-surface: #0b291d;
 }

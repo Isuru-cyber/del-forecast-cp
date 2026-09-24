@@ -1,9 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useApp } from '@/context/RoleContext';
+import { useApp, AppTheme } from '@/context/RoleContext';
 import {
   Upload,
   Users,
@@ -14,8 +14,8 @@ import {
   Globe2,
   Building2,
   Layers,
-  Sun,
-  Moon,
+  Palette,
+  Check,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -25,7 +25,8 @@ interface NavbarProps {
 
 export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
   const pathname = usePathname();
-  const { role, setRole, customerFilter, setCustomerFilter, theme, toggleTheme } = useApp();
+  const { role, setRole, customerFilter, setCustomerFilter, theme, setTheme } = useApp();
+  const [showThemeMenu, setShowThemeMenu] = useState(false);
 
   const formatTimestamp = (dateStr?: string) => {
     if (!dateStr) return 'No forecast loaded';
@@ -44,15 +45,22 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
     }
   };
 
+  const themes: { id: AppTheme; label: string; icon: string; dot: string }[] = [
+    { id: 'light', label: 'Corporate Light (Default)', icon: '☀️', dot: 'bg-blue-600' },
+    { id: 'navy', label: 'Midnight Navy', icon: '🌙', dot: 'bg-[#1e3a8a]' },
+    { id: 'dark', label: 'Slate Charcoal', icon: '🌑', dot: 'bg-slate-700' },
+    { id: 'emerald', label: 'Emerald Prestige', icon: '🌲', dot: 'bg-emerald-700' },
+  ];
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-navy-700 bg-white/95 dark:bg-navy-900/95 backdrop-blur shadow-sm">
       <div className="max-w-[1750px] mx-auto px-4 sm:px-6">
         <div className="flex flex-col md:flex-row items-center justify-between py-2.5 gap-2.5">
           
-          {/* Left Title: Clean and minimal without logo or subtitle */}
+          {/* Logo / Brand Name: All Capital, Bold, Matching Executive Gradient */}
           <div className="flex items-center">
-            <h1 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
-              Delivery Forecast - CP
+            <h1 className="font-extrabold tracking-wider bg-gradient-to-r from-blue-800 via-indigo-600 to-blue-900 dark:from-blue-400 dark:via-sky-300 dark:to-indigo-300 bg-clip-text text-transparent text-sm sm:text-base uppercase select-none">
+              DELIVERY FORECAST - CP
             </h1>
           </div>
 
@@ -62,7 +70,7 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
               onClick={() => setCustomerFilter('ALL')}
               className={`flex items-center space-x-1 px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
                 customerFilter === 'ALL'
-                  ? 'bg-white dark:bg-navy-700 text-slate-900 dark:text-white shadow-sm border border-slate-200/80 dark:border-navy-600'
+                  ? 'bg-white dark:bg-navy-700 text-slate-900 dark:text-white shadow-sm border border-slate-200/80 dark:border-navy-600 font-bold'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -147,14 +155,48 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
               )}
             </div>
 
-            {/* Theme Toggle Button */}
-            <button
-              onClick={toggleTheme}
-              title={`Switch to ${theme === 'dark' ? 'Light' : 'Midnight Navy'} mode`}
-              className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-navy-800 dark:hover:bg-navy-700 border border-slate-200 dark:border-navy-700 text-slate-600 dark:text-amber-400 transition-all"
-            >
-              {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-            </button>
+            {/* Multiple Themes Selector Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowThemeMenu(!showThemeMenu)}
+                title="Change Theme"
+                className="flex items-center space-x-1 px-2.5 py-1 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-navy-800 dark:hover:bg-navy-700 border border-slate-200 dark:border-navy-700 text-xs font-semibold text-slate-700 dark:text-slate-200 transition-all"
+              >
+                <Palette className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                <span className="hidden sm:inline">Theme</span>
+              </button>
+
+              {showThemeMenu && (
+                <div
+                  className="absolute right-0 mt-2 w-48 bg-white dark:bg-navy-800 rounded-xl shadow-xl border border-slate-200 dark:border-navy-700 py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                  onMouseLeave={() => setShowThemeMenu(false)}
+                >
+                  <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Select Theme
+                  </div>
+                  {themes.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => {
+                        setTheme(t.id);
+                        setShowThemeMenu(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-1.5 text-xs text-left transition-colors ${
+                        theme === t.id
+                          ? 'bg-blue-50 dark:bg-navy-700 font-bold text-blue-700 dark:text-blue-300'
+                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-navy-700/60'
+                      }`}
+                    >
+                      <span className="flex items-center space-x-2">
+                        <span>{t.icon}</span>
+                        <span>{t.label}</span>
+                      </span>
+                      {theme === t.id && <Check className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Role Switcher Pill */}
             <div className="flex items-center bg-slate-100 dark:bg-navy-800 p-0.5 rounded-xl border border-slate-200 dark:border-navy-700">

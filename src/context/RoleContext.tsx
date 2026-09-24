@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { CustomerFilter } from '@/lib/types';
 
 export type UserRole = 'admin' | 'viewer';
-export type AppTheme = 'dark' | 'light';
+export type AppTheme = 'light' | 'navy' | 'dark' | 'emerald';
 
 interface AppContextType {
   role: UserRole;
@@ -13,7 +13,6 @@ interface AppContextType {
   setCustomerFilter: (filter: CustomerFilter) => void;
   theme: AppTheme;
   setTheme: (theme: AppTheme) => void;
-  toggleTheme: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -21,23 +20,43 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [role, setRoleState] = useState<UserRole>('admin');
   const [customerFilter, setCustomerFilter] = useState<CustomerFilter>('ALL');
-  const [theme, setThemeState] = useState<AppTheme>('dark'); // Default to Executive Midnight Navy
+  const [theme, setThemeState] = useState<AppTheme>('light'); // DEFAULT TO LIGHT MODE as requested!
 
   useEffect(() => {
+    // 1. Role preference
     const savedRole = localStorage.getItem('cp_del_role') as UserRole;
     if (savedRole && (savedRole === 'admin' || savedRole === 'viewer')) {
       setRoleState(savedRole);
     }
 
+    // 2. Theme preference (Default is 'light')
     const savedTheme = localStorage.getItem('cp_del_theme') as AppTheme;
-    if (savedTheme && (savedTheme === 'dark' || savedTheme === 'light')) {
-      setThemeState(savedTheme);
-      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-    } else {
-      // Default to dark mode
-      document.documentElement.classList.add('dark');
-    }
+    const initialTheme: AppTheme = savedTheme && ['light', 'navy', 'dark', 'emerald'].includes(savedTheme)
+      ? savedTheme
+      : 'light';
+
+    applyThemeClass(initialTheme);
+    setThemeState(initialTheme);
   }, []);
+
+  const applyThemeClass = (t: AppTheme) => {
+    const root = document.documentElement;
+    root.classList.remove('dark', 'theme-navy', 'theme-slate', 'theme-emerald');
+
+    if (t === 'light') {
+      // Clean light mode
+      return;
+    }
+
+    root.classList.add('dark');
+    if (t === 'navy') {
+      root.classList.add('theme-navy');
+    } else if (t === 'emerald') {
+      root.classList.add('theme-emerald');
+    } else {
+      root.classList.add('theme-slate');
+    }
+  };
 
   const setRole = (newRole: UserRole) => {
     setRoleState(newRole);
@@ -47,16 +66,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const setTheme = (newTheme: AppTheme) => {
     setThemeState(newTheme);
     localStorage.setItem('cp_del_theme', newTheme);
-    document.documentElement.classList.toggle('dark', newTheme === 'dark');
-  };
-
-  const toggleTheme = () => {
-    const next = theme === 'dark' ? 'light' : 'dark';
-    setTheme(next);
+    applyThemeClass(newTheme);
   };
 
   return (
-    <AppContext.Provider value={{ role, setRole, customerFilter, setCustomerFilter, theme, setTheme, toggleTheme }}>
+    <AppContext.Provider value={{ role, setRole, customerFilter, setCustomerFilter, theme, setTheme }}>
       {children}
     </AppContext.Provider>
   );

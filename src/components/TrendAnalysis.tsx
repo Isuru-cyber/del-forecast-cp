@@ -294,11 +294,11 @@ export function TrendAnalysis({ report, filter }: TrendAnalysisProps) {
               <span>Back to Full Month</span>
             </button>
             <div>
-              <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">
-                Delivery Breakdown: {formatFullDate(drilldownData.date)}
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
+                Delivery Breakdown &middot; {formatFullDate(drilldownData.date)}
               </h4>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                Showing all shipments scheduled for this date ({filter} Customers)
+              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                Showing all shipments scheduled for this date ({filter === 'ALL' ? 'All Customers' : `${filter} Customers`})
               </p>
             </div>
           </div>
