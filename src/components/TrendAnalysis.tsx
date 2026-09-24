@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { ReportData, CustomerFilter, DateSummary, TrendBuckets } from '@/lib/types';
+import { ReportData, CustomerFilter, DateSummary, TrendBuckets, getActiveForecastMonthKey } from '@/lib/types';
 import {
   Calendar,
   AlertCircle,
@@ -10,6 +10,7 @@ import {
   Layers,
   ArrowLeft,
   Maximize2,
+  Minimize2,
   TrendingUp,
   Search,
 } from 'lucide-react';
@@ -51,8 +52,7 @@ export function TrendAnalysis({ report, filter }: TrendAnalysisProps) {
   };
 
   const getTodayMonthKey = () => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    return getActiveForecastMonthKey(report.dates);
   };
 
   // Build trend buckets
@@ -405,7 +405,7 @@ export function TrendAnalysis({ report, filter }: TrendAnalysisProps) {
     );
   };
 
-  const renderContent = () => (
+  const renderContent = (isFs: boolean = false) => (
     <div className="space-y-4">
       {/* 4 Horizon KPI Cards */}
       <div className="bg-white dark:bg-navy-800 rounded-xl shadow-sm border border-slate-200 dark:border-navy-700 p-4">
@@ -416,13 +416,23 @@ export function TrendAnalysis({ report, filter }: TrendAnalysisProps) {
               Overdue / Current / Future Load Summary ({filter} Customers)
             </h3>
           </div>
-          <button
-            onClick={() => setIsFullscreen(true)}
-            className="flex items-center space-x-1 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-navy-700 dark:hover:bg-navy-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold transition-all"
-          >
-            <Maximize2 className="w-3.5 h-3.5" />
-            <span>Full Screen</span>
-          </button>
+          {isFs ? (
+            <button
+              onClick={() => setIsFullscreen(false)}
+              className="flex items-center space-x-1.5 px-3 py-1 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-bold shadow-sm transition-all"
+            >
+              <Minimize2 className="w-3.5 h-3.5" />
+              <span>Exit Full Screen</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsFullscreen(true)}
+              className="flex items-center space-x-1.5 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-navy-700 dark:hover:bg-navy-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold transition-all"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
+              <span>Full Screen</span>
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -489,14 +499,17 @@ export function TrendAnalysis({ report, filter }: TrendAnalysisProps) {
 
   return (
     <>
-      {renderContent()}
+      {renderContent(false)}
 
       <FullscreenModal
         isOpen={isFullscreen}
         onClose={() => setIsFullscreen(false)}
         title={`Trend Analysis & Daily Load (${filter} Customers)`}
+        noPadding={false}
       >
-        {renderContent()}
+        <div className="p-4">
+          {renderContent(true)}
+        </div>
       </FullscreenModal>
     </>
   );

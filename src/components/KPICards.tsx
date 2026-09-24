@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ReportData, CustomerFilter } from '@/lib/types';
+import { ReportData, CustomerFilter, getActiveForecastMonthKey } from '@/lib/types';
 import {
   Globe2,
   Building2,
@@ -42,8 +42,7 @@ export function KPICards({ report, filter }: KPICardsProps) {
   const indirectValShare = grandTotal.value > 0 ? ((indirectTotal.value / grandTotal.value) * 100).toFixed(1) : '0';
 
   // Horizon breakdown
-  const now = new Date();
-  const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const currentMonthKey = getActiveForecastMonthKey(report.dates);
   let overdueVal = 0;
   let currentVal = 0;
   let futureVal = 0;

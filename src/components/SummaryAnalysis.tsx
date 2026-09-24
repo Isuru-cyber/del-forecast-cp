@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { ReportData, CustomerFilter } from '@/lib/types';
-import { Target, Calendar, TrendingUp, Maximize2 } from 'lucide-react';
+import { Target, Calendar, TrendingUp, Maximize2, Minimize2 } from 'lucide-react';
 import { FullscreenModal } from './FullscreenModal';
 
 interface SummaryAnalysisProps {
@@ -95,7 +95,7 @@ export function SummaryAnalysis({ report, filter }: SummaryAnalysisProps) {
     );
   };
 
-  const renderContent = () => (
+  const renderContent = (isFs: boolean = false) => (
     <div className="space-y-6">
       {/* Customer Distribution Share */}
       <div className="space-y-3">
@@ -106,13 +106,23 @@ export function SummaryAnalysis({ report, filter }: SummaryAnalysisProps) {
               Customer Demand Share ({filter} Customers)
             </h2>
           </div>
-          <button
-            onClick={() => setIsFullscreen(true)}
-            className="flex items-center space-x-1 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-navy-700 dark:hover:bg-navy-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold transition-all"
-          >
-            <Maximize2 className="w-3.5 h-3.5" />
-            <span>Full Screen</span>
-          </button>
+          {isFs ? (
+            <button
+              onClick={() => setIsFullscreen(false)}
+              className="flex items-center space-x-1.5 px-3 py-1 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-bold shadow-sm transition-all"
+            >
+              <Minimize2 className="w-3.5 h-3.5" />
+              <span>Exit Full Screen</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsFullscreen(true)}
+              className="flex items-center space-x-1.5 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-navy-700 dark:hover:bg-navy-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold transition-all"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
+              <span>Full Screen</span>
+            </button>
+          )}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {renderShareChart(
@@ -162,7 +172,7 @@ export function SummaryAnalysis({ report, filter }: SummaryAnalysisProps) {
 
   return (
     <>
-      {renderContent()}
+      {renderContent(false)}
 
       <FullscreenModal
         isOpen={isFullscreen}
@@ -171,7 +181,7 @@ export function SummaryAnalysis({ report, filter }: SummaryAnalysisProps) {
         noPadding={false}
       >
         <div className="p-4">
-          {renderContent()}
+          {renderContent(true)}
         </div>
       </FullscreenModal>
     </>

@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { ReportData, CustomerFilter, DateSummary, TrendBuckets } from '@/lib/types';
-import { UserCheck, AlertCircle, Clock, CheckCircle2, Layers, Maximize2, ArrowLeft } from 'lucide-react';
+import { ReportData, CustomerFilter, DateSummary, TrendBuckets, getActiveForecastMonthKey } from '@/lib/types';
+import { UserCheck, AlertCircle, Clock, CheckCircle2, Layers, Maximize2, Minimize2, ArrowLeft } from 'lucide-react';
 import { FullscreenModal } from './FullscreenModal';
 
 interface CustomerWiseTAProps {
@@ -40,8 +40,7 @@ export function CustomerWiseTA({ report, filter }: CustomerWiseTAProps) {
   };
 
   const getTodayMonthKey = () => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    return getActiveForecastMonthKey(report.dates);
   };
 
   // Filter customers by Direct / Indirect
@@ -240,7 +239,7 @@ export function CustomerWiseTA({ report, filter }: CustomerWiseTAProps) {
     );
   };
 
-  const renderContent = () => (
+  const renderContent = (isFs: boolean = false) => (
     <div className="space-y-4">
       {/* Customer Selection Bar */}
       <div className="bg-white dark:bg-navy-800 rounded-xl shadow-sm border border-slate-200 dark:border-navy-700 p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
@@ -279,13 +278,25 @@ export function CustomerWiseTA({ report, filter }: CustomerWiseTAProps) {
               </option>
             ))}
           </select>
-          <button
-            onClick={() => setIsFullscreen(true)}
-            className="p-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-navy-700 dark:hover:bg-navy-600 text-slate-600 dark:text-slate-200 rounded-lg"
-            title="Full Screen View"
-          >
-            <Maximize2 className="w-3.5 h-3.5" />
-          </button>
+          {isFs ? (
+            <button
+              onClick={() => setIsFullscreen(false)}
+              className="flex items-center space-x-1.5 px-3 py-1.5 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-bold shadow-sm transition-all"
+              title="Exit Full Screen View"
+            >
+              <Minimize2 className="w-3.5 h-3.5" />
+              <span>Exit Full Screen</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsFullscreen(true)}
+              className="flex items-center space-x-1.5 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-navy-700 dark:hover:bg-navy-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold transition-all"
+              title="Full Screen View"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
+              <span>Full Screen</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -356,7 +367,7 @@ export function CustomerWiseTA({ report, filter }: CustomerWiseTAProps) {
 
   return (
     <>
-      {renderContent()}
+      {renderContent(false)}
 
       <FullscreenModal
         isOpen={isFullscreen}
@@ -365,7 +376,7 @@ export function CustomerWiseTA({ report, filter }: CustomerWiseTAProps) {
         noPadding={false}
       >
         <div className="p-4">
-          {renderContent()}
+          {renderContent(true)}
         </div>
       </FullscreenModal>
     </>

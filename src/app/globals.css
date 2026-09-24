@@ -8,6 +8,51 @@ html {
   font-size: 13.5px; /* ~85% scale for compact executive data density */
 }
 
+/* =========================================================================
+   DYNAMIC THEME PALETTES (RGB values for Tailwind CSS variables)
+   ========================================================================= */
+
+/* Default / Fallback */
+:root {
+  --color-navy-950: 7 13 27;     /* #070D1B */
+  --color-navy-900: 11 19 43;    /* #0B132B */
+  --color-navy-850: 15 26 58;    /* #0F1A3A */
+  --color-navy-800: 19 34 56;    /* #132238 */
+  --color-navy-700: 27 48 79;    /* #1B304F */
+  --color-navy-600: 36 62 102;   /* #243E66 */
+}
+
+/* 1. NAVY BLUE THEME: Deep maritime ocean blue */
+html.dark.theme-navy,
+html.dark:not(.theme-slate):not(.theme-emerald) {
+  --color-navy-950: 6 15 32;     /* Deep oceanic canvas #060F20 */
+  --color-navy-900: 10 25 47;    /* Classic Navy background #0A192F */
+  --color-navy-850: 15 34 64;    /* Navy mid layer #0F2240 */
+  --color-navy-800: 19 40 76;    /* Rich Navy Card Surface #13284C */
+  --color-navy-700: 30 58 100;   /* Navy Border #1E3A64 */
+  --color-navy-600: 45 80 135;   /* Navy Hover #2D5087 */
+}
+
+/* 2. DARK SLATE THEME: Minimalist charcoal / modern graphite */
+html.dark.theme-slate {
+  --color-navy-950: 11 15 25;    /* Deep charcoal canvas #0B0F19 */
+  --color-navy-900: 15 23 42;    /* Slate 900 background #0F172A */
+  --color-navy-850: 24 33 50;    /* Slate 850 mid layer #182132 */
+  --color-navy-800: 30 41 59;    /* Slate 800 Card Surface #1E293B */
+  --color-navy-700: 51 65 85;    /* Slate 700 Border #334155 */
+  --color-navy-600: 71 85 105;   /* Slate 600 Hover #475569 */
+}
+
+/* 3. EMERALD THEME: Luxury dark forest pine green */
+html.dark.theme-emerald {
+  --color-navy-950: 4 18 13;     /* Deep forest canvas #04120D */
+  --color-navy-900: 6 26 18;     /* Dark Pine background #061A12 */
+  --color-navy-850: 8 35 24;     /* Emerald mid layer #082318 */
+  --color-navy-800: 12 46 32;    /* Rich Emerald Card Surface #0C2E20 */
+  --color-navy-700: 21 72 52;    /* Emerald Border #154834 */
+  --color-navy-600: 31 99 73;    /* Emerald Hover #1F6349 */
+}
+
 *,
 body,
 button,
@@ -35,6 +80,15 @@ code, pre, .font-mono {
   font-family: 'JetBrains Mono', monospace !important;
 }
 
+/* Body backgrounds react dynamically to current theme */
+html.dark body {
+  background-color: rgb(var(--color-navy-950));
+}
+
+html:not(.dark) body {
+  background-color: #f8fafc;
+}
+
 /* Custom scrollbars */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
@@ -48,7 +102,7 @@ code, pre, .font-mono {
   border-radius: 4px;
 }
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: rgb(var(--color-navy-700));
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
@@ -75,17 +129,4 @@ code, pre, .font-mono {
 .pivot-container th,
 .pivot-container td {
   background-clip: padding-box;
-}
-
-/* Theme Variant Background Support */
-html.dark.theme-navy body {
-  background-color: #070d1b;
-}
-
-html.dark.theme-slate body {
-  background-color: #0f172a;
-}
-
-html.dark.theme-emerald body {
-  background-color: #051811;
 }

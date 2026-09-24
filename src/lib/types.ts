@@ -82,3 +82,32 @@ export interface ReportData {
     total_value?: number;
   } | null;
 }
+
+export function getActiveForecastMonthKey(dates: string[]): string {
+  const now = new Date();
+  const systemMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  if (!dates || dates.length === 0) return systemMonth;
+
+  if (dates.some(d => d.startsWith(systemMonth))) {
+    return systemMonth;
+  }
+
+  const monthCounts: Record<string, number> = {};
+  dates.forEach(d => {
+    const m = d.slice(0, 7);
+    if (m && m.length === 7) {
+      monthCounts[m] = (monthCounts[m] || 0) + 1;
+    }
+  });
+
+  let bestMonth = '';
+  let maxCount = -1;
+  Object.entries(monthCounts).forEach(([m, count]) => {
+    if (count > maxCount) {
+      maxCount = count;
+      bestMonth = m;
+    }
+  });
+
+  return bestMonth || systemMonth;
+}

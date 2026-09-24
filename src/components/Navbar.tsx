@@ -48,10 +48,10 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
   };
 
   const themes: { id: AppTheme; label: string; icon: string }[] = [
-    { id: 'light', label: 'Corporate Light (Default)', icon: '☀️' },
-    { id: 'navy', label: 'Midnight Navy', icon: '🌙' },
-    { id: 'dark', label: 'Slate Charcoal', icon: '🌑' },
-    { id: 'emerald', label: 'Emerald Prestige', icon: '🌲' },
+    { id: 'light', label: 'Light', icon: '☀️' },
+    { id: 'navy', label: 'Navy Blue', icon: '🌊' },
+    { id: 'dark', label: 'Dark Slate', icon: '🌑' },
+    { id: 'emerald', label: 'Emerald', icon: '🌲' },
   ];
 
   return (

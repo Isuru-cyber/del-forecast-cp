@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { ReportData, CustomerFilter } from '@/lib/types';
-import { Search, Download, Maximize2 } from 'lucide-react';
+import { Search, Download, Maximize2, Minimize2 } from 'lucide-react';
 import { exportForecastToExcel } from '@/lib/excel-exporter';
 import { FullscreenModal } from './FullscreenModal';
 
@@ -313,34 +313,46 @@ export function PivotMatrix({ report, filter }: PivotMatrixProps) {
     </div>
   );
 
-  return (
-    <div className="space-y-2.5">
-      {/* Search and Action Toolbar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 bg-white dark:bg-navy-800 p-2.5 rounded-xl border border-slate-200 dark:border-navy-700 shadow-sm">
-        <div className="relative w-full sm:w-72">
-          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search customer name..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-1 bg-slate-50 dark:bg-navy-900 border border-slate-200 dark:border-navy-700 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-600 text-slate-800 dark:text-slate-100"
-          />
-        </div>
+  const renderToolbar = (isFs: boolean = false) => (
+    <div
+      className={`flex flex-col sm:flex-row items-center justify-between gap-2.5 bg-white dark:bg-navy-800 ${
+        isFs ? 'p-2.5 border-b' : 'p-2.5 rounded-xl border'
+      } border-slate-200 dark:border-navy-700 shadow-sm`}
+    >
+      <div className="relative w-full sm:w-72">
+        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        <input
+          type="text"
+          placeholder="Search customer name..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-8 pr-3 py-1 bg-slate-50 dark:bg-navy-900 border border-slate-200 dark:border-navy-700 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-600 text-slate-800 dark:text-slate-100"
+        />
+      </div>
 
-        <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-            <span className="text-blue-700 dark:text-blue-400 font-bold">{filteredCustomers.length}</span> of {customerSummaries.length} accounts
-          </span>
+      <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
+        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+          <span className="text-blue-700 dark:text-blue-400 font-bold">{filteredCustomers.length}</span> of {customerSummaries.length} accounts
+        </span>
 
+        <button
+          onClick={() => exportForecastToExcel(report, filter)}
+          className="flex items-center space-x-1 px-3 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-navy-700 dark:hover:bg-navy-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold transition-all"
+        >
+          <Download className="w-3.5 h-3.5" />
+          <span>Excel</span>
+        </button>
+
+        {isFs ? (
           <button
-            onClick={() => exportForecastToExcel(report, filter)}
-            className="flex items-center space-x-1 px-3 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-navy-700 dark:hover:bg-navy-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold transition-all"
+            onClick={() => setIsFullscreen(false)}
+            title="Exit Full Screen View"
+            className="flex items-center space-x-1 px-3 py-1 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-bold shadow-sm transition-all"
           >
-            <Download className="w-3.5 h-3.5" />
-            <span>Excel</span>
+            <Minimize2 className="w-3.5 h-3.5" />
+            <span>Exit Full Screen</span>
           </button>
-
+        ) : (
           <button
             onClick={() => setIsFullscreen(true)}
             title="Full Screen Presentation View"
@@ -349,23 +361,33 @@ export function PivotMatrix({ report, filter }: PivotMatrixProps) {
             <Maximize2 className="w-3.5 h-3.5" />
             <span>Full Screen</span>
           </button>
-        </div>
+        )}
       </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-2.5">
+      {/* Search and Action Toolbar */}
+      {renderToolbar(false)}
 
       {/* Main Table Wrapper */}
       <div className="bg-white dark:bg-navy-800 rounded-xl shadow-sm border border-slate-200 dark:border-navy-700 overflow-hidden">
         {renderTableContent(false)}
       </div>
 
-      {/* Fullscreen Modal View (100% Flush, Zero Outer Margins) */}
+      {/* Fullscreen Modal View (100% Flush, Zero Outer Margins, with Toolbar) */}
       <FullscreenModal
         isOpen={isFullscreen}
         onClose={() => setIsFullscreen(false)}
         title={`Pivot Matrix (${filter} Customers - ${filteredCustomers.length} Accounts)`}
         noPadding={true}
       >
-        <div className="w-full h-full bg-white dark:bg-navy-800 overflow-hidden">
-          {renderTableContent(true)}
+        <div className="w-full h-full flex flex-col bg-white dark:bg-navy-800 overflow-hidden">
+          {renderToolbar(true)}
+          <div className="flex-1 overflow-hidden">
+            {renderTableContent(true)}
+          </div>
         </div>
       </FullscreenModal>
     </div>

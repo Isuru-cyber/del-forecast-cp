@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useApp } from '@/context/RoleContext';
-import { ReportData } from '@/lib/types';
+import { ReportData, getActiveForecastMonthKey } from '@/lib/types';
 import { Navbar } from '@/components/Navbar';
 import { KPICards } from '@/components/KPICards';
 import { exportForecastToExcel } from '@/lib/excel-exporter';
@@ -74,8 +74,7 @@ export default function DashboardPage() {
   // Horizon Breakdown Calculations
   const horizonData = useMemo(() => {
     if (!report) return { past: { qty: 0, value: 0 }, current: { qty: 0, value: 0 }, future: { qty: 0, value: 0 }, totalVal: 0 };
-    const now = new Date();
-    const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const currentMonthKey = getActiveForecastMonthKey(report.dates);
     const { customerSummaries, dates, data } = report;
 
     const filteredCustNames = customerSummaries

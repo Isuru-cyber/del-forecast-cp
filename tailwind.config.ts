@@ -15,12 +15,12 @@ const config: Config = {
       },
       colors: {
         navy: {
-          950: "#070D1B",
-          900: "#0B132B",
-          850: "#0F1A3A",
-          800: "#132238",
-          700: "#1B304F",
-          600: "#243E66",
+          950: "rgb(var(--color-navy-950) / <alpha-value>)",
+          900: "rgb(var(--color-navy-900) / <alpha-value>)",
+          850: "rgb(var(--color-navy-850) / <alpha-value>)",
+          800: "rgb(var(--color-navy-800) / <alpha-value>)",
+          700: "rgb(var(--color-navy-700) / <alpha-value>)",
+          600: "rgb(var(--color-navy-600) / <alpha-value>)",
         },
       },
     },
