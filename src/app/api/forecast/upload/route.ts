@@ -24,8 +24,7 @@ export async function POST(request: Request) {
     if (newCustomers && Array.isArray(newCustomers) && newCustomers.length > 0) {
       for (const nc of newCustomers) {
         if (nc.name && nc.type) {
-          let cName = nc.name.trim();
-          if (cName.endsWith(',')) cName = cName.slice(0, -1).trim();
+          let cName = nc.name.trim().replace(/,+$/, '').replace(/\s+/g, ' ').trim();
           await client.query(
             `INSERT INTO customers (name, type) 
              VALUES ($1, $2) 
@@ -37,12 +36,12 @@ export async function POST(request: Request) {
       }
     }
 
-    // 2. Fetch customer type mapping from database (case-insensitive & trailing comma normalized)
+    // 2. Fetch customer type mapping from database (case-insensitive & whitespace/trailing comma normalized)
     const custRes = await client.query('SELECT name, type FROM customers;');
     const custTypeMap: Record<string, CustomerType> = {};
     custRes.rows.forEach(r => {
       const original = r.name.trim();
-      const normalized = original.replace(/,+$/, '').trim().toUpperCase();
+      const normalized = original.replace(/,+$/, '').replace(/\s+/g, ' ').trim().toUpperCase();
       custTypeMap[original] = r.type as CustomerType;
       custTypeMap[normalized] = r.type as CustomerType;
     });
@@ -81,8 +80,8 @@ export async function POST(request: Request) {
           `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7})`
         );
         
-        const normCust = (rec.customer || '').trim().replace(/,+$/, '').toUpperCase();
-        const custType = custTypeMap[normCust] || custTypeMap[rec.customer] || 'DIRECT';
+        const normCust = (rec.customer || '').trim().replace(/,+$/, '').replace(/\s+/g, ' ').toUpperCase();
+        const custType = custTypeMap[normCust] || custTypeMap[rec.customer] || 'UNMAPPED';
         params.push(
           batchId,
           rec.customer,

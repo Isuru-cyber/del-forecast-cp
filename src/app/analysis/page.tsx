@@ -11,6 +11,7 @@ import { SummaryAnalysis } from '@/components/SummaryAnalysis';
 import { TrendAnalysis } from '@/components/TrendAnalysis';
 import { CustomerWiseTA } from '@/components/CustomerWiseTA';
 import { SummaryTables } from '@/components/SummaryTables';
+import { UnmappedCustomerAlert } from '@/components/UnmappedCustomerAlert';
 import { exportForecastToExcel } from '@/lib/excel-exporter';
 import {
   Table,
@@ -114,6 +115,12 @@ function AnalysisContent() {
           </div>
         ) : (
           <>
+            {/* Unmapped Customer Warning Alert */}
+            <UnmappedCustomerAlert
+              unmappedCustomers={report.unmappedCustomers}
+              onClassified={fetchForecast}
+            />
+
             {/* Primary Analysis Tab Switcher & Export Controls */}
             <div className="bg-white dark:bg-navy-900 rounded-xl p-2 border border-slate-200 dark:border-navy-700 shadow-sm flex flex-col md:flex-row items-center justify-between gap-2.5">
               <div className="flex bg-slate-100 dark:bg-navy-800 p-0.5 rounded-xl border border-slate-200 dark:border-navy-700 overflow-x-auto max-w-full no-scrollbar w-full md:w-auto">

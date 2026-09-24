@@ -35,13 +35,16 @@ export async function GET() {
     const recordsRes = await query(
       `SELECT 
         r.customer_name, 
-        COALESCE(c.type, r.customer_type, 'DIRECT') AS customer_type, 
+        c.type AS master_type,
+        r.customer_type AS recorded_type, 
         r.delivery_date::text AS delivery_date, 
         r.source_type, 
         r.qty, 
         r.value 
        FROM forecast_records r
-       LEFT JOIN customers c ON UPPER(TRIM(TRAILING ',' FROM TRIM(c.name))) = UPPER(TRIM(TRAILING ',' FROM TRIM(r.customer_name)))
+       LEFT JOIN customers c ON 
+         REGEXP_REPLACE(UPPER(TRIM(TRAILING ',' FROM TRIM(c.name))), '\\s+', ' ', 'g') = 
+         REGEXP_REPLACE(UPPER(TRIM(TRAILING ',' FROM TRIM(r.customer_name))), '\\s+', ' ', 'g')
        WHERE r.batch_id = $1 
        ORDER BY r.customer_name ASC, r.delivery_date ASC;`,
       [batch.id]
@@ -58,11 +61,30 @@ export async function GET() {
     const grandTotal: PivotCell = { qty: 0, value: 0 };
     const directTotal: PivotCell = { qty: 0, value: 0 };
     const indirectTotal: PivotCell = { qty: 0, value: 0 };
+    const unmappedCustomers = new Set<string>();
 
     records.forEach(r => {
       const cust = r.customer_name;
       const date = r.delivery_date;
-      const type = (r.customer_type as CustomerType) || 'DIRECT';
+
+      // Dynamic customer classification:
+      // Priority 1: Master Directory type
+      // Priority 2: Recorded type in batch (if DIRECT/INDIRECT)
+      // Priority 3: UNMAPPED (Never default silently to DIRECT!)
+      let type: CustomerType = 'UNMAPPED';
+      if (r.master_type === 'DIRECT' || r.master_type === 'INDIRECT') {
+        type = r.master_type as CustomerType;
+      } else if (r.recorded_type === 'DIRECT' || r.recorded_type === 'INDIRECT') {
+        type = r.recorded_type as CustomerType;
+      } else {
+        type = 'UNMAPPED';
+      }
+
+      // Track if missing from Master Directory
+      if (!r.master_type) {
+        unmappedCustomers.add(cust);
+      }
+
       const qty = Number(r.qty || 0);
       const val = Number(r.value || 0);
 
@@ -89,7 +111,7 @@ export async function GET() {
       if (type === 'DIRECT') {
         directTotal.qty += qty;
         directTotal.value += val;
-      } else {
+      } else if (type === 'INDIRECT') {
         indirectTotal.qty += qty;
         indirectTotal.value += val;
       }
@@ -105,7 +127,7 @@ export async function GET() {
       data: consolidated,
       customerSummaries: sortedCustomers.map(c => ({
         label: c,
-        type: customerTypes[c] || 'DIRECT',
+        type: customerTypes[c] || 'UNMAPPED',
         qty: custTotals[c]?.qty || 0,
         value: custTotals[c]?.value || 0,
       })),
@@ -117,6 +139,7 @@ export async function GET() {
       grandTotal,
       directTotal,
       indirectTotal,
+      unmappedCustomers: Array.from(unmappedCustomers),
       batchInfo: {
         id: batch.id,
         uploaded_at: batch.uploaded_at,

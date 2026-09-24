@@ -61,7 +61,7 @@ export function CustomerWiseTA({ report, filter }: CustomerWiseTAProps) {
   }, [availableCustomers, selectedCustomer]);
 
   const currentCustSummary = report.customerSummaries.find(c => c.label === selectedCustomer);
-  const currentCustType = currentCustSummary?.type || report.customerTypes[selectedCustomer] || 'DIRECT';
+  const currentCustType = currentCustSummary?.type || report.customerTypes[selectedCustomer] || 'UNMAPPED';
 
   // Build trend buckets for selected customer
   const buckets: TrendBuckets = useMemo(() => {
@@ -216,10 +216,16 @@ export function CustomerWiseTA({ report, filter }: CustomerWiseTAProps) {
                 className={`text-[9px] font-bold px-1.5 py-0.2 rounded border uppercase tracking-wider ${
                   currentCustType === 'DIRECT'
                     ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
-                    : 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800'
+                    : currentCustType === 'INDIRECT'
+                    ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800'
+                    : 'bg-rose-100 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800 animate-pulse'
                 }`}
               >
-                {currentCustType === 'DIRECT' ? 'Direct (Export)' : 'Indirect (Local)'}
+                {currentCustType === 'DIRECT'
+                  ? 'Direct (Export)'
+                  : currentCustType === 'INDIRECT'
+                  ? 'Indirect (Local)'
+                  : '⚠️ UNMAPPED (Missing from Directory)'}
               </span>
             </div>
           </div>

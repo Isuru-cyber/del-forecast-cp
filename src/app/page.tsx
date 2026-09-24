@@ -6,6 +6,7 @@ import { useApp } from '@/context/RoleContext';
 import { ReportData, getActiveForecastMonthKey } from '@/lib/types';
 import { Navbar } from '@/components/Navbar';
 import { KPICards } from '@/components/KPICards';
+import { UnmappedCustomerAlert } from '@/components/UnmappedCustomerAlert';
 import {
   Table,
   BarChart3,
@@ -267,6 +268,12 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
+            {/* Unmapped Customer Warning Alert */}
+            <UnmappedCustomerAlert
+              unmappedCustomers={report.unmappedCustomers}
+              onClassified={fetchForecast}
+            />
+
             {/* Top Scorecard KPIs */}
             <KPICards report={report} filter={customerFilter} />
 

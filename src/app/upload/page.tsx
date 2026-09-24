@@ -56,7 +56,9 @@ export default function UploadPage() {
         if (data.success && Array.isArray(data.customers)) {
           const map: Record<string, CustomerType> = {};
           data.customers.forEach((c: Customer) => {
+            const norm = c.name.replace(/,+$/, '').replace(/\s+/g, ' ').trim();
             map[c.name] = c.type;
+            map[norm] = c.type;
           });
           setCustomerMap(map);
         }
@@ -89,7 +91,10 @@ export default function UploadPage() {
 
       const allMissing = Array.from(
         new Set([...ouResult.missingCustomers, ...stResult.missingCustomers])
-      ).filter(c => !customerMap[c]);
+      ).filter(c => {
+        const norm = c.replace(/,+$/, '').replace(/\s+/g, ' ').trim();
+        return !customerMap[c] && !customerMap[norm];
+      });
 
       if (allMissing.length > 0) {
         const initialMap: Record<string, CustomerType> = {};

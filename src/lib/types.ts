@@ -1,6 +1,6 @@
-export type CustomerType = 'DIRECT' | 'INDIRECT';
+export type CustomerType = 'DIRECT' | 'INDIRECT' | 'UNMAPPED';
 
-export type CustomerFilter = 'ALL' | 'DIRECT' | 'INDIRECT';
+export type CustomerFilter = 'ALL' | 'DIRECT' | 'INDIRECT' | 'UNMAPPED';
 
 export interface Customer {
   id: string;
@@ -72,6 +72,7 @@ export interface ReportData {
   grandTotal: PivotCell;
   directTotal: PivotCell;
   indirectTotal: PivotCell;
+  unmappedCustomers?: string[];
   batchInfo: {
     id?: string;
     uploaded_at: string;

@@ -32,10 +32,7 @@ export async function POST(request: Request) {
       );
     }
 
-    let trimmedName = String(name).trim();
-    if (trimmedName.endsWith(',')) {
-      trimmedName = trimmedName.slice(0, -1).trim();
-    }
+    let trimmedName = String(name).trim().replace(/,+$/, '').replace(/\s+/g, ' ').trim();
     const upperType = type.toUpperCase();
 
     const res = await query<Customer>(
@@ -47,11 +44,12 @@ export async function POST(request: Request) {
       [trimmedName, upperType]
     );
 
-    // Keep active forecast_records in sync as well
+    // Keep active forecast_records in sync as well with whitespace tolerance
     await query(
       `UPDATE forecast_records 
        SET customer_type = $2 
-       WHERE UPPER(TRIM(TRAILING ',' FROM TRIM(customer_name))) = UPPER(TRIM($1));`,
+       WHERE REGEXP_REPLACE(UPPER(TRIM(TRAILING ',' FROM TRIM(customer_name))), '\\s+', ' ', 'g') = 
+             REGEXP_REPLACE(UPPER(TRIM($1)), '\\s+', ' ', 'g');`,
       [trimmedName, upperType]
     );
 
