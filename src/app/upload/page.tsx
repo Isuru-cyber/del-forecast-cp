@@ -4,13 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import { useApp } from '@/context/RoleContext';
-import { parseExcelWorkbook, ParseResult } from '@/lib/excel-parser';
+import { parseExcelWorkbook } from '@/lib/excel-parser';
 import { Customer, CustomerType } from '@/lib/types';
 import {
   Upload,
   CheckCircle2,
   AlertCircle,
-  FileSpreadsheet,
   Play,
   RefreshCw,
   Globe2,
@@ -43,7 +42,6 @@ export default function UploadPage() {
     stName: string;
   } | null>(null);
 
-  // Load existing customers on mount
   useEffect(() => {
     async function loadCustomers() {
       try {
@@ -83,16 +81,14 @@ export default function UploadPage() {
 
       const combinedRecords = [...ouResult.records, ...stResult.records];
 
-      // Find any missing customers across both files
       const allMissing = Array.from(
         new Set([...ouResult.missingCustomers, ...stResult.missingCustomers])
       ).filter(c => !customerMap[c]);
 
       if (allMissing.length > 0) {
-        // Unknown customers found! Prompt user
         const initialMap: Record<string, CustomerType> = {};
         allMissing.forEach(c => {
-          initialMap[c] = 'DIRECT'; // default
+          initialMap[c] = 'DIRECT';
         });
         setMissingCustomers(allMissing);
         setMissingClassification(initialMap);
@@ -106,7 +102,6 @@ export default function UploadPage() {
         return;
       }
 
-      // If no missing customers, upload immediately
       await finalizeUpload(combinedRecords, [], ouFile.name, stFile.name);
     } catch (err: any) {
       console.error(err);
@@ -140,7 +135,6 @@ export default function UploadPage() {
         throw new Error(data.error || 'Failed to save forecast in database');
       }
 
-      // Success! Redirect to dashboard
       router.push('/');
     } catch (err: any) {
       console.error(err);
@@ -177,43 +171,43 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-slate-50">
+    <div className="flex-1 flex flex-col min-h-screen bg-slate-50 dark:bg-navy-950 transition-colors">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-10 md:py-16 flex flex-col justify-center space-y-8">
+      <main className="flex-1 max-w-3xl w-full mx-auto px-4 py-8 flex flex-col justify-center space-y-6">
         <div className="flex items-center justify-between">
           <button
             onClick={() => router.push('/')}
-            className="flex items-center space-x-2 text-slate-500 hover:text-slate-800 text-xs font-bold uppercase tracking-wider transition-all"
+            className="flex items-center space-x-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white text-xs font-semibold uppercase tracking-wider transition-all"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Dashboard</span>
           </button>
-          <span className="text-[11px] font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-            Database Sync Engine &middot; {Object.keys(customerMap).length} Verified Customers
+          <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-400 bg-slate-100 dark:bg-navy-800 px-2.5 py-0.5 rounded-full border border-slate-200 dark:border-navy-700">
+            {Object.keys(customerMap).length} Verified Accounts
           </span>
         </div>
 
-        <div className="text-center space-y-2">
-          <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+        <div className="text-center space-y-1">
+          <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
             Upload ERP Delivery Forecast Data
           </h2>
-          <p className="text-xs text-slate-500 max-w-lg mx-auto">
-            Upload the latest Order Outstanding (OU) and Shipment Tracker (ST) files. Columns will be dynamically identified, validated, and saved permanently to Supabase.
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+            Columns are dynamically identified and matched against the customer master database.
           </p>
         </div>
 
         {/* Upload Dropzones */}
-        <section className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 space-y-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section className="bg-white dark:bg-navy-900 rounded-2xl shadow-sm border border-slate-200 dark:border-navy-700 p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             
             {/* 1. Order Outstanding Box */}
             <div className="flex flex-col group">
-              <label className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center">
-                <span className="w-2 h-2 rounded-full mr-2 bg-blue-700"></span>
+              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 flex items-center">
+                <span className="w-2 h-2 rounded-full mr-1.5 bg-blue-700"></span>
                 Order Outstanding (OU)
               </label>
-              <div className="relative border-2 border-dashed rounded-2xl p-8 text-center border-slate-200 hover:border-blue-500 hover:bg-blue-50/40 transition-all cursor-pointer">
+              <div className="relative border-2 border-dashed rounded-xl p-6 text-center border-slate-200 dark:border-navy-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50/40 dark:hover:bg-navy-800 transition-all cursor-pointer">
                 <input
                   type="file"
                   accept=".xlsx, .xls"
@@ -223,26 +217,25 @@ export default function UploadPage() {
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                 />
                 <div className="flex flex-col items-center">
-                  <div className={`p-3.5 rounded-2xl mb-3 transition-colors ${
-                    ouFile ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-700'
+                  <div className={`p-3 rounded-xl mb-2 transition-colors ${
+                    ouFile ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300' : 'bg-slate-100 dark:bg-navy-800 text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-700'
                   }`}>
-                    {ouFile ? <CheckCircle2 className="w-7 h-7" /> : <Upload className="w-7 h-7" />}
+                    {ouFile ? <CheckCircle2 className="w-6 h-6" /> : <Upload className="w-6 h-6" />}
                   </div>
-                  <p className="text-xs font-bold text-slate-800 truncate max-w-[200px]">
+                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[180px]">
                     {ouFile ? ouFile.name : 'Select or Drop OU Workbook'}
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-1">.xlsx or .xls from ERP</p>
                 </div>
               </div>
             </div>
 
             {/* 2. Shipment Tracker Box */}
             <div className="flex flex-col group">
-              <label className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center">
-                <span className="w-2 h-2 rounded-full mr-2 bg-indigo-900"></span>
+              <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2 flex items-center">
+                <span className="w-2 h-2 rounded-full mr-1.5 bg-indigo-900 dark:bg-indigo-400"></span>
                 Shipment Tracker (ST)
               </label>
-              <div className="relative border-2 border-dashed rounded-2xl p-8 text-center border-slate-200 hover:border-blue-500 hover:bg-blue-50/40 transition-all cursor-pointer">
+              <div className="relative border-2 border-dashed rounded-xl p-6 text-center border-slate-200 dark:border-navy-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50/40 dark:hover:bg-navy-800 transition-all cursor-pointer">
                 <input
                   type="file"
                   accept=".xlsx, .xls"
@@ -252,15 +245,14 @@ export default function UploadPage() {
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                 />
                 <div className="flex flex-col items-center">
-                  <div className={`p-3.5 rounded-2xl mb-3 transition-colors ${
-                    stFile ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-700'
+                  <div className={`p-3 rounded-xl mb-2 transition-colors ${
+                    stFile ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300' : 'bg-slate-100 dark:bg-navy-800 text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-700'
                   }`}>
-                    {stFile ? <CheckCircle2 className="w-7 h-7" /> : <Upload className="w-7 h-7" />}
+                    {stFile ? <CheckCircle2 className="w-6 h-6" /> : <Upload className="w-6 h-6" />}
                   </div>
-                  <p className="text-xs font-bold text-slate-800 truncate max-w-[200px]">
+                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[180px]">
                     {stFile ? stFile.name : 'Select or Drop ST Workbook'}
                   </p>
-                  <p className="text-[10px] text-slate-400 mt-1">.xlsx or .xls from ERP</p>
                 </div>
               </div>
             </div>
@@ -269,18 +261,18 @@ export default function UploadPage() {
 
           {/* Error Message Display */}
           {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-center text-red-700 text-xs font-semibold">
-              <AlertCircle className="w-4 h-4 mr-3 flex-shrink-0 text-red-600" />
+            <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-xl flex items-center text-red-700 dark:text-red-300 text-xs font-semibold">
+              <AlertCircle className="w-4 h-4 mr-2.5 flex-shrink-0 text-red-600 dark:text-red-400" />
               <span>{error}</span>
             </div>
           )}
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-4 border-t border-slate-100">
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-3 border-t border-slate-100 dark:border-navy-700">
             <button
               onClick={handleProcessData}
               disabled={isProcessing}
-              className="flex items-center space-x-2 bg-blue-700 hover:bg-blue-800 disabled:opacity-50 text-white px-8 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider shadow-md transition-all"
+              className="flex items-center space-x-1.5 bg-blue-700 hover:bg-blue-800 disabled:opacity-50 text-white px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider shadow transition-all"
             >
               {isProcessing ? (
                 <>
@@ -289,7 +281,7 @@ export default function UploadPage() {
                 </>
               ) : (
                 <>
-                  <Play className="w-4 h-4 fill-white" />
+                  <Play className="w-3.5 h-3.5 fill-white" />
                   <span>Execute & Save to Database</span>
                 </>
               )}
@@ -297,9 +289,9 @@ export default function UploadPage() {
             <button
               onClick={handleReset}
               disabled={isProcessing}
-              className="flex items-center space-x-2 bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 px-6 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all"
+              className="flex items-center space-x-1.5 bg-white dark:bg-navy-800 hover:bg-slate-100 dark:hover:bg-navy-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-navy-700 px-5 py-2.5 rounded-xl font-semibold text-xs uppercase tracking-wider transition-all"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="w-3.5 h-3.5" />
               <span>Reset</span>
             </button>
           </div>
@@ -307,62 +299,61 @@ export default function UploadPage() {
 
         {/* Missing Customers Modal */}
         {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-xl w-full p-6 md:p-8 space-y-6">
-              <div className="flex items-center space-x-3">
-                <div className="p-3 bg-amber-100 text-amber-800 rounded-2xl">
-                  <HelpCircle className="w-6 h-6" />
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-navy-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-navy-700 max-w-lg w-full p-6 space-y-4">
+              <div className="flex items-center space-x-2.5">
+                <div className="p-2.5 bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 rounded-xl">
+                  <HelpCircle className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900">
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                     New Customers Detected!
                   </h3>
-                  <p className="text-xs text-slate-500">
-                    The uploaded sheet contains {missingCustomers.length} customer(s) not in the database. Please specify their classification to save them permanently.
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Please select classification for {missingCustomers.length} unrecognized account(s):
                   </p>
                 </div>
               </div>
 
-              {/* Customer List with Direct/Indirect Radio buttons */}
-              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-2 max-h-[260px] overflow-y-auto pr-1.5 custom-scrollbar">
                 {missingCustomers.map((cust) => {
                   const currentChoice = missingClassification[cust] || 'DIRECT';
                   return (
                     <div
                       key={cust}
-                      className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                      className="p-3 rounded-lg bg-slate-50 dark:bg-navy-800 border border-slate-200 dark:border-navy-700 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
                     >
-                      <span className="text-xs font-bold text-slate-800 truncate max-w-[240px]">
+                      <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[200px]">
                         {cust}
                       </span>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-1.5">
                         <button
                           type="button"
                           onClick={() => {
                             setMissingClassification(prev => ({ ...prev, [cust]: 'DIRECT' }));
                           }}
-                          className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+                          className={`flex items-center space-x-1 px-2.5 py-1 rounded-md text-[11px] font-bold border transition-all ${
                             currentChoice === 'DIRECT'
                               ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                              : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
+                              : 'bg-white dark:bg-navy-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-navy-600 hover:bg-slate-100'
                           }`}
                         >
-                          <Globe2 className="w-3.5 h-3.5" />
-                          <span>Direct (Export)</span>
+                          <Globe2 className="w-3 h-3" />
+                          <span>Direct</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => {
                             setMissingClassification(prev => ({ ...prev, [cust]: 'INDIRECT' }));
                           }}
-                          className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+                          className={`flex items-center space-x-1 px-2.5 py-1 rounded-md text-[11px] font-bold border transition-all ${
                             currentChoice === 'INDIRECT'
                               ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                              : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
+                              : 'bg-white dark:bg-navy-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-navy-600 hover:bg-slate-100'
                           }`}
                         >
-                          <Building2 className="w-3.5 h-3.5" />
-                          <span>Indirect (Local)</span>
+                          <Building2 className="w-3 h-3" />
+                          <span>Local</span>
                         </button>
                       </div>
                     </div>
@@ -370,20 +361,20 @@ export default function UploadPage() {
                 })}
               </div>
 
-              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100 dark:border-navy-700">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
+                  className="px-4 py-1.5 bg-slate-100 dark:bg-navy-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-semibold transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleModalSave}
-                  className="px-6 py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md transition-all"
+                  className="px-5 py-1.5 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-bold uppercase tracking-wider shadow transition-all"
                 >
-                  Save & Save Forecast
+                  Save & Commit Forecast
                 </button>
               </div>
             </div>
