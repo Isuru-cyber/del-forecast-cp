@@ -13,8 +13,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="bg-slate-50 text-slate-900 min-h-screen antialiased flex flex-col">
+    <html lang="en" className="dark theme-navy">
+      <body className="bg-slate-50 dark:bg-navy-950 text-slate-900 dark:text-slate-100 min-h-screen antialiased flex flex-col">
         <AppProvider>
           {children}
         </AppProvider>

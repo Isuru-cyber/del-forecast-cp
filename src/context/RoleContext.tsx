@@ -22,7 +22,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [role, setRoleState] = useState<UserRole>('viewer'); // DEFAULT TO VIEWER
   const [customerFilter, setCustomerFilter] = useState<CustomerFilter>('ALL');
-  const [theme, setThemeState] = useState<AppTheme>('light'); // DEFAULT TO LIGHT MODE as requested!
+  const [theme, setThemeState] = useState<AppTheme>('navy'); // DEFAULT TO NAVY BLUE THEME as requested!
 
   useEffect(() => {
     // 1. Role preference (Only stay admin if explicitly saved as admin)
@@ -33,11 +33,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setRoleState('viewer');
     }
 
-    // 2. Theme preference (Default is 'light')
+    // 2. Theme preference (Default is 'navy')
     const savedTheme = localStorage.getItem('cp_del_theme') as AppTheme;
     const initialTheme: AppTheme = savedTheme && ['light', 'navy', 'dark', 'emerald'].includes(savedTheme)
       ? savedTheme
-      : 'light';
+      : 'navy';
 
     applyThemeClass(initialTheme);
     setThemeState(initialTheme);
