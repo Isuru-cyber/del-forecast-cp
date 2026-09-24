@@ -70,8 +70,10 @@ export async function POST(request: Request) {
       const params: any[] = [];
 
       chunk.forEach((rec, idx) => {
-        const offset = idx * 6;
-        valPlaceholders.push(`($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6})`);
+        const offset = idx * 7;
+        valPlaceholders.push(
+          `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7})`
+        );
         
         const custType = custTypeMap[rec.customer] || 'DIRECT';
         params.push(
