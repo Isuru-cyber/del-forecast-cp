@@ -39,7 +39,7 @@ export function FullscreenModal({
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-white dark:bg-navy-950 overflow-hidden w-full h-full m-0 p-0 animate-in fade-in duration-150">
       {/* 0 margin, 100% flush header bar */}
-      <div className="w-full px-4 py-2 border-b border-slate-200 dark:border-navy-700 bg-slate-50 dark:bg-navy-900 flex items-center justify-between flex-shrink-0">
+      <div className="w-full px-4 py-2 border-b border-slate-200 dark:border-navy-700 bg-slate-50 dark:bg-navy-900 flex items-center justify-between flex-shrink-0 h-[44px]">
         <div className="flex items-center space-x-2.5">
           <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
           <h2 className="text-xs font-bold text-slate-900 dark:text-white tracking-wider uppercase">
@@ -60,7 +60,7 @@ export function FullscreenModal({
 
       {/* Fullscreen Body - 100% Edge-to-edge flush with zero margins */}
       <div
-        className={`flex-1 min-h-0 w-full bg-slate-50/50 dark:bg-navy-950 ${
+        className={`flex-1 min-h-0 w-full h-[calc(100vh-44px)] bg-slate-50/50 dark:bg-navy-950 ${
           noPadding ? 'p-0 m-0 overflow-hidden flex flex-col' : 'p-3 overflow-auto custom-scrollbar'
         }`}
       >

@@ -66,7 +66,7 @@ function AnalysisContent() {
         uploadedBy={report?.batchInfo?.uploaded_by}
       />
 
-      <main className="flex-1 max-w-[1850px] w-full mx-auto px-3 sm:px-6 py-3.5 space-y-3">
+      <main className="flex-1 max-w-[1850px] w-full mx-auto px-3 sm:px-6 pt-3 pb-1 space-y-2.5">
 
         {loading ? (
           <div className="py-32 flex flex-col items-center justify-center space-y-3">
@@ -226,7 +226,7 @@ function AnalysisContent() {
         )}
       </main>
 
-      <footer className="w-full mt-auto py-3"></footer>
+      <footer className="w-full mt-auto py-1"></footer>
     </div>
   );
 }

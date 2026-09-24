@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { ReportData, CustomerFilter } from '@/lib/types';
-import { Search, Download, Maximize2, Minimize2 } from 'lucide-react';
+import { Search, Download, Maximize2, Minimize2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { exportForecastToExcel } from '@/lib/excel-exporter';
 import { FullscreenModal } from './FullscreenModal';
 
@@ -14,6 +14,22 @@ interface PivotMatrixProps {
 export function PivotMatrix({ report, filter }: PivotMatrixProps) {
   const [search, setSearch] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const normalContainerRef = useRef<HTMLDivElement>(null);
+  const fsContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = (isFs: boolean, direction: 'left' | 'right' | 'start' | 'end') => {
+    const container = isFs ? fsContainerRef.current : normalContainerRef.current;
+    if (!container) return;
+    if (direction === 'start') {
+      container.scrollTo({ left: 0, behavior: 'smooth' });
+    } else if (direction === 'end') {
+      container.scrollTo({ left: container.scrollWidth, behavior: 'smooth' });
+    } else if (direction === 'left') {
+      container.scrollBy({ left: -400, behavior: 'smooth' });
+    } else if (direction === 'right') {
+      container.scrollBy({ left: 400, behavior: 'smooth' });
+    }
+  };
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -63,8 +79,11 @@ export function PivotMatrix({ report, filter }: PivotMatrixProps) {
 
   const renderTableContent = (isFs: boolean = false) => (
     <div
+      ref={isFs ? fsContainerRef : normalContainerRef}
       className={`pivot-container custom-scrollbar w-full ${
-        isFs ? 'flex-1 min-h-0 overflow-auto' : 'max-h-[72vh] overflow-auto'
+        isFs
+          ? 'flex-1 min-h-0 h-[calc(100vh-92px)] max-h-[calc(100vh-92px)] overflow-auto'
+          : 'max-h-[78vh] overflow-auto'
       }`}
     >
       <table className="w-full border-separate border-spacing-0">
@@ -319,15 +338,58 @@ export function PivotMatrix({ report, filter }: PivotMatrixProps) {
         isFs ? 'p-2.5 border-b' : 'p-2.5 rounded-xl border'
       } border-slate-200 dark:border-navy-700 shadow-sm`}
     >
-      <div className="relative w-full sm:w-72">
-        <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-        <input
-          type="text"
-          placeholder="Search customer name..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-8 pr-3 py-1 bg-slate-50 dark:bg-navy-900 border border-slate-200 dark:border-navy-700 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-600 text-slate-800 dark:text-slate-100"
-        />
+      <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="relative w-full sm:w-64">
+          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search customer name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-8 pr-3 py-1 bg-slate-50 dark:bg-navy-900 border border-slate-200 dark:border-navy-700 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-blue-600 text-slate-800 dark:text-slate-100"
+          />
+        </div>
+
+        {/* Quick Date Horizon Horizontal Scroll Navigation */}
+        <div className="hidden sm:flex items-center gap-1 bg-slate-100 dark:bg-navy-900/80 p-0.5 rounded-lg border border-slate-200 dark:border-navy-700">
+          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase px-1.5">
+            Scroll:
+          </span>
+          <button
+            type="button"
+            onClick={() => handleScroll(isFs, 'start')}
+            title="Jump to Start (First Date)"
+            className="px-1.5 py-0.5 hover:bg-white dark:hover:bg-navy-800 rounded text-slate-600 dark:text-slate-300 transition-all text-[10px] flex items-center gap-0.5 font-semibold"
+          >
+            <ChevronsLeft className="w-3.5 h-3.5" />
+            <span>Start</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleScroll(isFs, 'left')}
+            title="Scroll Left"
+            className="p-1 hover:bg-white dark:hover:bg-navy-800 rounded text-slate-600 dark:text-slate-300 transition-all"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => handleScroll(isFs, 'right')}
+            title="Scroll Right"
+            className="p-1 hover:bg-white dark:hover:bg-navy-800 rounded text-slate-600 dark:text-slate-300 transition-all"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => handleScroll(isFs, 'end')}
+            title="Jump to Totals & End Dates"
+            className="px-1.5 py-0.5 hover:bg-white dark:hover:bg-navy-800 rounded text-blue-700 dark:text-blue-400 transition-all text-[10px] flex items-center gap-0.5 font-semibold"
+          >
+            <span>Totals</span>
+            <ChevronsRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
@@ -374,7 +436,7 @@ export function PivotMatrix({ report, filter }: PivotMatrixProps) {
         title={`Pivot Matrix (${filter} Customers - ${filteredCustomers.length} Accounts)`}
         noPadding={true}
       >
-        <div className="w-full h-full flex flex-col bg-white dark:bg-navy-800 overflow-hidden">
+        <div className="flex-1 min-h-0 w-full h-[calc(100vh-44px)] flex flex-col bg-white dark:bg-navy-800 overflow-hidden">
           <div className="shrink-0">
             {renderToolbar(true)}
           </div>

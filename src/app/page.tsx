@@ -30,6 +30,7 @@ export default function DashboardPage() {
   const [report, setReport] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [portfolioMixMode, setPortfolioMixMode] = useState<'value' | 'volume'>('value');
 
   const fetchForecast = async () => {
     setLoading(true);
@@ -201,8 +202,9 @@ export default function DashboardPage() {
   const radius = 42;
   const circumference = 2 * Math.PI * radius; // ~263.89
 
-  // Portfolio Mix Donut Calculation
-  const directStroke = (portfolioDistribution.directValPct / 100) * circumference;
+  // Portfolio Mix Donut Calculation based on selected mode
+  const activeDirectPct = portfolioMixMode === 'value' ? portfolioDistribution.directValPct : portfolioDistribution.directQtyPct;
+  const directStroke = (activeDirectPct / 100) * circumference;
   const indirectStroke = circumference - directStroke;
 
   // Horizon Donut Calculation
@@ -310,20 +312,44 @@ export default function DashboardPage() {
               {/* 1. Portfolio Mix (Direct vs Indirect) with Rich SVG Donut Chart */}
               <div className="bg-white dark:bg-navy-900 rounded-xl p-4 border border-slate-200 dark:border-navy-700 shadow-sm flex flex-col justify-between">
                 <div>
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-2.5">
                     <div className="flex items-center space-x-2">
                       <div className="w-1 h-3.5 bg-emerald-600 rounded-full"></div>
                       <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                        Portfolio Mix (Direct vs Indirect)
+                        Portfolio Mix
                       </h3>
                     </div>
-                    <PieChart className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    {/* Value vs Volume Pill Switcher */}
+                    <div className="flex items-center bg-slate-100 dark:bg-navy-800 p-0.5 rounded-lg border border-slate-200 dark:border-navy-700 text-[10px]">
+                      <button
+                        type="button"
+                        onClick={() => setPortfolioMixMode('value')}
+                        className={`px-2 py-0.5 rounded font-bold transition-all ${
+                          portfolioMixMode === 'value'
+                            ? 'bg-emerald-600 text-white shadow-sm'
+                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                      >
+                        Value ($)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPortfolioMixMode('volume')}
+                        className={`px-2 py-0.5 rounded font-bold transition-all ${
+                          portfolioMixMode === 'volume'
+                            ? 'bg-emerald-600 text-white shadow-sm'
+                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                      >
+                        Volume (KG)
+                      </button>
+                    </div>
                   </div>
 
                   {/* Visual SVG Donut + Key Legend */}
-                  <div className="flex items-center justify-around py-2">
+                  <div className="flex items-center justify-around py-1.5">
                     {/* Donut Chart */}
-                    <div className="relative w-28 h-28 flex items-center justify-center">
+                    <div className="relative w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center">
                       <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                         {/* Background track */}
                         <circle
@@ -360,10 +386,10 @@ export default function DashboardPage() {
                       {/* Center Metric */}
                       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                         <span className="text-base font-extrabold text-slate-900 dark:text-white leading-none">
-                          {portfolioDistribution.directValPct}%
+                          {activeDirectPct}%
                         </span>
-                        <span className="text-[9px] uppercase font-bold text-emerald-600 dark:text-emerald-400 tracking-wider">
-                          Export
+                        <span className="text-[8px] uppercase font-bold text-emerald-600 dark:text-emerald-400 tracking-wider mt-0.5">
+                          {portfolioMixMode === 'value' ? 'Export Val' : 'Export Qty'}
                         </span>
                       </div>
                     </div>
@@ -371,65 +397,98 @@ export default function DashboardPage() {
                     {/* Donut Legend */}
                     <div className="space-y-2 text-xs">
                       <div className="flex items-center space-x-2">
-                        <span className="w-3 h-3 rounded-md bg-emerald-500 shadow-sm"></span>
+                        <span className="w-2.5 h-2.5 rounded-md bg-emerald-500 shadow-sm shrink-0"></span>
                         <div>
                           <p className="text-[11px] font-bold text-slate-800 dark:text-slate-100 leading-tight">
                             Direct (Export)
                           </p>
                           <p className="text-[10px] text-slate-400 font-mono">
-                            {portfolioDistribution.directValPct}% &middot; ${formatNumber(report.directTotal.value)}
+                            {portfolioMixMode === 'value'
+                              ? `${portfolioDistribution.directValPct}% · $${formatNumber(report.directTotal.value)}`
+                              : `${portfolioDistribution.directQtyPct}% · ${formatNumber(report.directTotal.qty)} KG`}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <span className="w-3 h-3 rounded-md bg-indigo-500 shadow-sm"></span>
+                        <span className="w-2.5 h-2.5 rounded-md bg-indigo-500 shadow-sm shrink-0"></span>
                         <div>
                           <p className="text-[11px] font-bold text-slate-800 dark:text-slate-100 leading-tight">
                             Indirect (Local)
                           </p>
                           <p className="text-[10px] text-slate-400 font-mono">
-                            {portfolioDistribution.indirectValPct}% &middot; ${formatNumber(report.indirectTotal.value)}
+                            {portfolioMixMode === 'value'
+                              ? `${portfolioDistribution.indirectValPct}% · $${formatNumber(report.indirectTotal.value)}`
+                              : `${portfolioDistribution.indirectQtyPct}% · ${formatNumber(report.indirectTotal.qty)} KG`}
                           </p>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Volume Split Progress Bar */}
-                  <div className="mt-2 space-y-1">
-                    <div className="flex justify-between text-[11px] font-semibold">
-                      <span className="text-emerald-700 dark:text-emerald-400 font-medium">
-                        Volume Share: Direct {portfolioDistribution.directQtyPct}%
-                      </span>
-                      <span className="text-indigo-700 dark:text-indigo-400 font-medium">
-                        Local {portfolioDistribution.indirectQtyPct}%
-                      </span>
+                  {/* Dual Share Breakdown: BOTH Value Share & Volume Share displayed together */}
+                  <div className="mt-2 space-y-2 pt-2 border-t border-slate-100 dark:border-navy-800">
+                    {/* 1. Value Share Progress Bar */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                          Value Share: <strong className="text-emerald-600 dark:text-emerald-400">Direct {portfolioDistribution.directValPct}%</strong> (${formatNumber(report.directTotal.value)})
+                        </span>
+                        <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+                          Local {portfolioDistribution.indirectValPct}% (${formatNumber(report.indirectTotal.value)})
+                        </span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden flex shadow-inner">
+                        <div
+                          style={{ width: `${portfolioDistribution.directValPct}%` }}
+                          className="bg-emerald-500 h-full transition-all duration-300"
+                          title={`Direct Value: $${formatNumber(report.directTotal.value)} (${portfolioDistribution.directValPct}%)`}
+                        />
+                        <div
+                          style={{ width: `${portfolioDistribution.indirectValPct}%` }}
+                          className="bg-indigo-500 h-full transition-all duration-300"
+                          title={`Indirect Value: $${formatNumber(report.indirectTotal.value)} (${portfolioDistribution.indirectValPct}%)`}
+                        />
+                      </div>
                     </div>
-                    <div className="w-full h-2.5 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden flex shadow-inner">
-                      <div
-                        style={{ width: `${portfolioDistribution.directQtyPct}%` }}
-                        className="bg-emerald-400 h-full"
-                        title={`Direct Volume: ${formatNumber(report.directTotal.qty)} KG`}
-                      ></div>
-                      <div
-                        style={{ width: `${portfolioDistribution.indirectQtyPct}%` }}
-                        className="bg-indigo-400 h-full"
-                        title={`Indirect Volume: ${formatNumber(report.indirectTotal.qty)} KG`}
-                      ></div>
+
+                    {/* 2. Volume Share Progress Bar */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center text-[10px]">
+                        <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                          Volume Share: <strong className="text-emerald-600 dark:text-emerald-400">Direct {portfolioDistribution.directQtyPct}%</strong> ({formatNumber(report.directTotal.qty)} KG)
+                        </span>
+                        <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+                          Local {portfolioDistribution.indirectQtyPct}% ({formatNumber(report.indirectTotal.qty)} KG)
+                        </span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden flex shadow-inner">
+                        <div
+                          style={{ width: `${portfolioDistribution.directQtyPct}%` }}
+                          className="bg-emerald-400 h-full transition-all duration-300"
+                          title={`Direct Volume: ${formatNumber(report.directTotal.qty)} KG (${portfolioDistribution.directQtyPct}%)`}
+                        />
+                        <div
+                          style={{ width: `${portfolioDistribution.indirectQtyPct}%` }}
+                          className="bg-indigo-400 h-full transition-all duration-300"
+                          title={`Indirect Volume: ${formatNumber(report.indirectTotal.qty)} KG (${portfolioDistribution.indirectQtyPct}%)`}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Bottom Total Cards */}
-                <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-navy-800 text-xs">
-                  <div className="bg-emerald-50/60 dark:bg-emerald-950/30 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-900/50">
+                {/* Bottom Total Cards with clean badges */}
+                <div className="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-slate-100 dark:border-navy-800 text-xs">
+                  <div className="bg-emerald-50/60 dark:bg-emerald-950/30 p-2 rounded-lg border border-emerald-100 dark:border-emerald-900/50">
                     <span className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-400 block">Direct Total</span>
-                    <span className="font-bold text-slate-800 dark:text-slate-100 font-mono">${formatNumber(report.directTotal.value)}</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100 font-mono block">${formatNumber(report.directTotal.value)}</span>
                     <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-mono">{formatNumber(report.directTotal.qty)} KG</span>
                   </div>
-                  <div className="bg-indigo-50/60 dark:bg-indigo-950/30 p-2.5 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
+                  <div className="bg-indigo-50/60 dark:bg-indigo-950/30 p-2 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
                     <span className="text-[10px] uppercase font-bold text-indigo-700 dark:text-indigo-400 block">Indirect Total</span>
-                    <span className="font-bold text-slate-800 dark:text-slate-100 font-mono">${formatNumber(report.indirectTotal.value)}</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100 font-mono block">${formatNumber(report.indirectTotal.value)}</span>
                     <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-mono">{formatNumber(report.indirectTotal.qty)} KG</span>
                   </div>
                 </div>
