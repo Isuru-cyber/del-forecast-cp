@@ -97,7 +97,7 @@ export default function DashboardPage() {
     return [...filtered].sort((a, b) => b.value - a.value).slice(0, 8);
   }, [report, customerFilter]);
 
-  // Horizon Breakdown Calculations (Based on Today's date)
+  // Horizon Breakdown Calculations (Month-based Horizon: Overdue, Current Month, Future)
   const horizonData = useMemo(() => {
     if (!report) return {
       past: { qty: 0, value: 0 },
@@ -138,8 +138,11 @@ export default function DashboardPage() {
 
       const mKey = d.slice(0, 7);
 
-      // Overdue vs Current Month vs Next Months relative to Today
-      if (d < todayStr) {
+      // Month-based Horizon partitioning:
+      // Overdue: Months prior to current month
+      // Current Month: Current active month (e.g. Sep 2026)
+      // Future: Months after current month (e.g. Oct 2026 onwards)
+      if (mKey < currentMonthKey) {
         past.qty += q;
         past.value += v;
       } else if (mKey === currentMonthKey) {
@@ -150,8 +153,8 @@ export default function DashboardPage() {
         future.value += v;
       }
 
-      // Count remaining dispatch dates from today onwards with scheduled orders
-      if (d >= todayStr && (q > 0 || v > 0)) {
+      // Count remaining dispatch dates within current month from today onwards with scheduled orders
+      if (d >= todayStr && mKey === currentMonthKey && (q > 0 || v > 0)) {
         remainingDispatchDaysCount += 1;
         remainingQty += q;
         remainingVal += v;
@@ -175,7 +178,7 @@ export default function DashboardPage() {
     };
   }, [report]);
 
-  // Horizon Load Summary Cards
+  // Horizon Load Summary Cards (Overdue, Current Month, Future, Velocity)
   const horizonCards = useMemo(() => {
     if (!report) return [];
     const remainingDaysCount = horizonData.remainingDispatchDaysCount;
@@ -184,8 +187,8 @@ export default function DashboardPage() {
 
     return [
       {
-        title: 'Overdue Backlog',
-        sub: 'Past Due Shipments',
+        title: 'Overdue',
+        sub: 'Past Due Backlog',
         totals: horizonData.past,
         bg: 'bg-amber-50/70 dark:bg-amber-950/40',
         border: 'border-amber-200 dark:border-amber-800/50',
@@ -195,8 +198,8 @@ export default function DashboardPage() {
         isVelocity: false,
       },
       {
-        title: currentMonthLabel,
-        sub: 'Current Month Load',
+        title: 'Current Month',
+        sub: `${currentMonthLabel} Load`,
         totals: horizonData.current,
         bg: 'bg-blue-50/70 dark:bg-blue-950/40',
         border: 'border-blue-200 dark:border-blue-800/50',
@@ -206,8 +209,8 @@ export default function DashboardPage() {
         isVelocity: false,
       },
       {
-        title: 'Next Months',
-        sub: 'Future Pipeline',
+        title: 'Future',
+        sub: 'Next Months Pipeline',
         totals: horizonData.future,
         bg: 'bg-emerald-50/70 dark:bg-emerald-950/40',
         border: 'border-emerald-200 dark:border-emerald-800/50',
@@ -695,7 +698,7 @@ export default function DashboardPage() {
                   <div className="space-y-2 mt-2">
                     <div className="space-y-1">
                       <div className="flex justify-between text-[11px]">
-                        <span className="font-semibold text-amber-700 dark:text-amber-400">Overdue Backlog</span>
+                        <span className="font-semibold text-amber-700 dark:text-amber-400">Overdue</span>
                         <span className="font-mono font-bold text-slate-800 dark:text-slate-200">${formatNumber(horizonData.past.value)}</span>
                       </div>
                       <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden">
@@ -708,7 +711,7 @@ export default function DashboardPage() {
 
                     <div className="space-y-1">
                       <div className="flex justify-between text-[11px]">
-                        <span className="font-semibold text-blue-700 dark:text-blue-400">Current Month Load</span>
+                        <span className="font-semibold text-blue-700 dark:text-blue-400">Current Month</span>
                         <span className="font-mono font-bold text-slate-800 dark:text-slate-200">${formatNumber(horizonData.current.value)}</span>
                       </div>
                       <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden">
@@ -721,7 +724,7 @@ export default function DashboardPage() {
 
                     <div className="space-y-1">
                       <div className="flex justify-between text-[11px]">
-                        <span className="font-semibold text-emerald-700 dark:text-emerald-400">Future Pipeline</span>
+                        <span className="font-semibold text-emerald-700 dark:text-emerald-400">Future</span>
                         <span className="font-mono font-bold text-slate-800 dark:text-slate-200">${formatNumber(horizonData.future.value)}</span>
                       </div>
                       <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden">

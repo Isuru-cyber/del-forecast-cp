@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { ReportData, CustomerFilter, getActiveForecastMonthKey } from '@/lib/types';
+import { useApp } from '@/context/RoleContext';
 import {
   Globe2,
   Building2,
@@ -16,6 +17,7 @@ interface KPICardsProps {
 }
 
 export function KPICards({ report, filter }: KPICardsProps) {
+  const { theme } = useApp();
   const { grandTotal, directTotal, indirectTotal } = report;
 
   const formatNum = (n: number) => {
@@ -52,21 +54,86 @@ export function KPICards({ report, filter }: KPICardsProps) {
   const top5ValShare = activeValue > 0 ? ((top5Value / activeValue) * 100).toFixed(1) : '0';
   const top1Cust = sortedAccounts[0]?.label || 'None';
 
+  // Dynamic theme styling for Total Portfolio card
+  const getThemeStyles = () => {
+    switch (theme) {
+      case 'emerald':
+        return {
+          gradient: 'bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-950 text-white',
+          glow1: 'bg-emerald-400/25',
+          glow2: 'bg-teal-500/20',
+          ring: 'ring-2 ring-emerald-400 border border-emerald-400/50',
+          borderInactive: 'border border-emerald-500/30',
+          accentText: 'text-emerald-100',
+          sparkle: 'text-emerald-300',
+          subLabel: 'text-emerald-200/90',
+          footerBorder: 'border-white/20',
+          volumeLabel: 'text-emerald-200',
+          volumeValue: 'text-emerald-100',
+        };
+      case 'dark': // Slate
+        return {
+          gradient: 'bg-gradient-to-br from-slate-700 via-slate-800 to-zinc-950 text-white',
+          glow1: 'bg-sky-400/20',
+          glow2: 'bg-slate-500/20',
+          ring: 'ring-2 ring-sky-400 border border-sky-400/50',
+          borderInactive: 'border border-slate-600/30',
+          accentText: 'text-slate-100',
+          sparkle: 'text-sky-300',
+          subLabel: 'text-slate-300/90',
+          footerBorder: 'border-white/20',
+          volumeLabel: 'text-slate-300',
+          volumeValue: 'text-sky-200',
+        };
+      case 'navy':
+        return {
+          gradient: 'bg-gradient-to-br from-blue-700 via-blue-900 to-slate-950 text-white',
+          glow1: 'bg-sky-400/25',
+          glow2: 'bg-blue-600/20',
+          ring: 'ring-2 ring-sky-400 border border-sky-400/50',
+          borderInactive: 'border border-blue-500/30',
+          accentText: 'text-sky-100',
+          sparkle: 'text-sky-300',
+          subLabel: 'text-blue-200/90',
+          footerBorder: 'border-white/20',
+          volumeLabel: 'text-blue-200',
+          volumeValue: 'text-sky-200',
+        };
+      case 'light':
+      default:
+        return {
+          gradient: 'bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 text-white shadow-md',
+          glow1: 'bg-sky-300/35',
+          glow2: 'bg-indigo-300/25',
+          ring: 'ring-2 ring-blue-300 border border-blue-300/50',
+          borderInactive: 'border border-blue-400/30',
+          accentText: 'text-blue-50',
+          sparkle: 'text-sky-200',
+          subLabel: 'text-blue-100',
+          footerBorder: 'border-white/20',
+          volumeLabel: 'text-blue-100',
+          volumeValue: 'text-white',
+        };
+    }
+  };
+
+  const themeStyles = getThemeStyles();
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-      {/* 1. Grand Total Card - Shining Royal Blue with Deep Dark Depth */}
-      <div className={`relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-950 text-white rounded-xl p-3.5 sm:p-4 shadow-md transition-all min-h-[115px] flex flex-col justify-between ${
+      {/* 1. Grand Total Card - Dynamically reacts to selected Theme */}
+      <div className={`relative overflow-hidden ${themeStyles.gradient} rounded-xl p-3.5 sm:p-4 shadow-md transition-all duration-300 min-h-[115px] flex flex-col justify-between ${
         filter === 'ALL'
-          ? 'ring-2 ring-sky-400 border border-sky-400/50'
-          : 'border border-blue-500/30'
+          ? themeStyles.ring
+          : themeStyles.borderInactive
       }`}>
         {/* Soft Ambient Radial Shine Glow */}
-        <div className="absolute -top-10 -right-10 w-28 h-28 bg-sky-400/25 rounded-full blur-xl pointer-events-none" />
-        <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-blue-500/20 rounded-full blur-lg pointer-events-none" />
+        <div className={`absolute -top-10 -right-10 w-28 h-28 ${themeStyles.glow1} rounded-full blur-xl pointer-events-none transition-colors duration-300`} />
+        <div className={`absolute -bottom-8 -left-8 w-24 h-24 ${themeStyles.glow2} rounded-full blur-lg pointer-events-none transition-colors duration-300`} />
 
         <div className="relative z-10 flex items-center justify-between mb-1.5">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-sky-100 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-sky-300 animate-pulse" />
+          <span className={`text-[11px] font-bold uppercase tracking-wider ${themeStyles.accentText} flex items-center gap-1.5`}>
+            <Sparkles className={`w-3.5 h-3.5 ${themeStyles.sparkle} animate-pulse`} />
             {filter === 'ALL' ? 'Total Portfolio' : `${filter} Portfolio`}
           </span>
           <span className="text-[10px] font-mono bg-white/20 text-white px-2 py-0.5 rounded-full border border-white/25 font-semibold shadow-xs">
@@ -74,13 +141,13 @@ export function KPICards({ report, filter }: KPICardsProps) {
           </span>
         </div>
         <div className="relative z-10 space-y-0.5">
-          <p className="text-[9px] uppercase font-semibold text-blue-200/90">Total Value (USD)</p>
+          <p className={`text-[9px] uppercase font-semibold ${themeStyles.subLabel}`}>Total Value (USD)</p>
           <p className="text-xl font-black text-white tracking-tight drop-shadow-xs">
             ${formatNum(activeValue)}
           </p>
-          <div className="flex items-center justify-between pt-1.5 border-t border-white/20">
-            <span className="text-[10px] text-blue-200 font-medium">Total Volume</span>
-            <span className="text-xs font-mono font-bold text-sky-200">{formatNum(activeQty)} KG</span>
+          <div className={`flex items-center justify-between pt-1.5 border-t ${themeStyles.footerBorder}`}>
+            <span className={`text-[10px] ${themeStyles.volumeLabel} font-medium`}>Total Volume</span>
+            <span className={`text-xs font-mono font-bold ${themeStyles.volumeValue}`}>{formatNum(activeQty)} KG</span>
           </div>
         </div>
       </div>
