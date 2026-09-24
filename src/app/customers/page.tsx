@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
+import { useApp } from '@/context/RoleContext';
 import { Customer, CustomerType } from '@/lib/types';
 import {
   Users,
@@ -19,8 +20,15 @@ import {
 
 export default function CustomersPage() {
   const router = useRouter();
+  const { role } = useApp();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (role === 'viewer') {
+      router.push('/');
+    }
+  }, [role, router]);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'DIRECT' | 'INDIRECT'>('ALL');
   const [updatingId, setUpdatingId] = useState<string | null>(null);

@@ -278,16 +278,7 @@ export function CustomerWiseTA({ report, filter }: CustomerWiseTAProps) {
               </option>
             ))}
           </select>
-          {isFs ? (
-            <button
-              onClick={() => setIsFullscreen(false)}
-              className="flex items-center space-x-1.5 px-3 py-1.5 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-bold shadow-sm transition-all"
-              title="Exit Full Screen View"
-            >
-              <Minimize2 className="w-3.5 h-3.5" />
-              <span>Exit Full Screen</span>
-            </button>
-          ) : (
+          {!isFs && (
             <button
               onClick={() => setIsFullscreen(true)}
               className="flex items-center space-x-1.5 px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-navy-700 dark:hover:bg-navy-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold transition-all"

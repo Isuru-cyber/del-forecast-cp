@@ -343,16 +343,7 @@ export function PivotMatrix({ report, filter }: PivotMatrixProps) {
           <span>Excel</span>
         </button>
 
-        {isFs ? (
-          <button
-            onClick={() => setIsFullscreen(false)}
-            title="Exit Full Screen View"
-            className="flex items-center space-x-1 px-3 py-1 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-bold shadow-sm transition-all"
-          >
-            <Minimize2 className="w-3.5 h-3.5" />
-            <span>Exit Full Screen</span>
-          </button>
-        ) : (
+        {!isFs && (
           <button
             onClick={() => setIsFullscreen(true)}
             title="Full Screen Presentation View"

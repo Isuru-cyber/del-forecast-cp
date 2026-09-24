@@ -283,45 +283,37 @@ export function TrendAnalysis({ report, filter }: TrendAnalysisProps) {
 
     return (
       <div className="space-y-4 animate-in fade-in duration-300">
-        {/* Drilldown Toolbar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-blue-50/70 dark:bg-navy-800 p-4 rounded-xl border border-blue-200/80 dark:border-navy-700">
-          <div className="flex items-center space-x-3">
+        {/* Compact Single-Row Drilldown Toolbar (Maximized space for data table) */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 bg-blue-50/70 dark:bg-navy-800 px-3.5 py-2 rounded-xl border border-blue-200/80 dark:border-navy-700 shadow-sm">
+          <div className="flex items-center space-x-2.5 w-full sm:w-auto">
             <button
               onClick={() => setSelectedDate(null)}
-              className="flex items-center space-x-1.5 px-3 py-1.5 bg-white dark:bg-navy-700 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-bold border border-blue-200 dark:border-navy-600 hover:bg-blue-100 transition-all shadow-sm"
+              className="flex items-center space-x-1 px-2.5 py-1 bg-white dark:bg-navy-700 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-bold border border-blue-200 dark:border-navy-600 hover:bg-blue-100 transition-all shadow-sm shrink-0"
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back to Full Month</span>
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back</span>
             </button>
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-blue-800 dark:text-blue-400">
-                  Delivery Breakdown
-                </span>
-                <span className="text-slate-300 dark:text-navy-600">&bull;</span>
-                <span className="text-xs font-bold text-slate-900 dark:text-white">
-                  {formatFullDate(drilldownData.date)}
-                </span>
-              </div>
-              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">
-                Showing all shipments scheduled for this date ({filter === 'ALL' ? 'ALL Customers' : `${filter} Customers`})
-              </p>
+            <div className="flex items-center space-x-2 text-xs truncate">
+              <span className="font-bold text-slate-900 dark:text-white truncate">
+                {formatFullDate(drilldownData.date)}
+              </span>
+              <span className="text-[10px] font-semibold text-blue-700 dark:text-blue-400 bg-blue-100/70 dark:bg-navy-900 px-2 py-0.5 rounded-full border border-blue-200 dark:border-navy-700 shrink-0">
+                {filter === 'ALL' ? 'ALL Customers' : `${filter} Customers`}
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center space-x-3 self-end sm:self-auto">
-            <div className="text-right">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Day Total</span>
-              <span className="text-xs font-mono font-bold text-blue-700 dark:text-blue-400">
-                ${formatNumber(drilldownData.totalVal)} &middot; {formatNumber(drilldownData.totalQty)} KG
-              </span>
-            </div>
+          <div className="flex items-center space-x-3 w-full sm:w-auto justify-between sm:justify-end">
+            <span className="text-[10px] uppercase font-bold text-slate-400">Day Total:</span>
+            <span className="text-xs font-mono font-bold text-blue-700 dark:text-blue-400">
+              ${formatNumber(drilldownData.totalVal)} &middot; {formatNumber(drilldownData.totalQty)} KG
+            </span>
           </div>
         </div>
 
         {/* Drilldown Search and Table */}
         <div className="bg-white dark:bg-navy-800 rounded-xl border border-slate-200 dark:border-navy-700 overflow-hidden shadow-sm">
-          <div className="p-3 border-b border-slate-100 dark:border-navy-700 flex items-center justify-between">
+          <div className="p-2.5 border-b border-slate-100 dark:border-navy-700 flex items-center justify-between">
             <div className="relative w-64">
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
@@ -329,7 +321,7 @@ export function TrendAnalysis({ report, filter }: TrendAnalysisProps) {
                 placeholder="Search customers on this date..."
                 value={drillSearch}
                 onChange={(e) => setDrillSearch(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-navy-900 border border-slate-200 dark:border-navy-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-600"
+                className="w-full pl-8 pr-3 py-1 bg-slate-50 dark:bg-navy-900 border border-slate-200 dark:border-navy-700 rounded-lg text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-blue-600"
               />
             </div>
             <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
@@ -337,7 +329,7 @@ export function TrendAnalysis({ report, filter }: TrendAnalysisProps) {
             </span>
           </div>
 
-          <div className="overflow-x-auto max-h-[420px] custom-scrollbar">
+          <div className="overflow-x-auto max-h-[580px] custom-scrollbar">
             <table className="w-full">
               <thead className="sticky top-0 bg-slate-50 dark:bg-navy-900 border-b border-slate-200 dark:border-navy-700 z-10">
                 <tr>
@@ -416,15 +408,7 @@ export function TrendAnalysis({ report, filter }: TrendAnalysisProps) {
               Overdue / Current / Future Load Summary ({filter} Customers)
             </h3>
           </div>
-          {isFs ? (
-            <button
-              onClick={() => setIsFullscreen(false)}
-              className="flex items-center space-x-1.5 px-3 py-1 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-bold shadow-sm transition-all"
-            >
-              <Minimize2 className="w-3.5 h-3.5" />
-              <span>Exit Full Screen</span>
-            </button>
-          ) : (
+          {!isFs && (
             <button
               onClick={() => setIsFullscreen(true)}
               className="flex items-center space-x-1.5 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-navy-700 dark:hover:bg-navy-600 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold transition-all"

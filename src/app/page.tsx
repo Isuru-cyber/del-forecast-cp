@@ -25,6 +25,8 @@ import {
   Layers,
   Sparkles,
   PieChart,
+  AlertCircle,
+  CheckCircle2,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -62,6 +64,21 @@ export default function DashboardPage() {
     }).format(num);
   };
 
+  const monthKeyToLabel = (key: string) => {
+    const [y, m] = key.split('-').map(Number);
+    const d = new Date(y, m - 1, 1);
+    return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  };
+
+  // Active Forecast Month
+  const currentMonthKey = useMemo(() => {
+    return report ? getActiveForecastMonthKey(report.dates) : '';
+  }, [report]);
+
+  const currentMonthLabel = useMemo(() => {
+    return currentMonthKey ? monthKeyToLabel(currentMonthKey) : 'Current Month';
+  }, [currentMonthKey]);
+
   // Top Customer Drivers
   const topCustomers = useMemo(() => {
     if (!report) return [];
@@ -74,7 +91,6 @@ export default function DashboardPage() {
   // Horizon Breakdown Calculations
   const horizonData = useMemo(() => {
     if (!report) return { past: { qty: 0, value: 0 }, current: { qty: 0, value: 0 }, future: { qty: 0, value: 0 }, totalVal: 0 };
-    const currentMonthKey = getActiveForecastMonthKey(report.dates);
     const { customerSummaries, dates, data } = report;
 
     const filteredCustNames = customerSummaries
@@ -111,7 +127,7 @@ export default function DashboardPage() {
 
     const totalVal = past.value + current.value + future.value;
     return { past, current, future, totalVal };
-  }, [report, customerFilter]);
+  }, [report, customerFilter, currentMonthKey]);
 
   // Direct vs Indirect Percentages
   const portfolioDistribution = useMemo(() => {
@@ -125,6 +141,70 @@ export default function DashboardPage() {
       indirectQtyPct: Math.round((report.indirectTotal.qty / totalQty) * 100),
     };
   }, [report]);
+
+  // Overdue / Current / Future Load Summary Cards (as requested on Dashboard)
+  const horizonCards = useMemo(() => {
+    if (!report) return [];
+    return [
+      {
+        title: 'Previous Months',
+        sub: 'Overdue Backlog',
+        totals: horizonData.past,
+        bg: 'bg-amber-50/70 dark:bg-amber-950/40',
+        border: 'border-amber-200 dark:border-amber-800/50',
+        text: 'text-amber-900 dark:text-amber-300',
+        dot: 'bg-amber-500',
+        icon: <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />,
+      },
+      {
+        title: currentMonthLabel,
+        sub: 'Current Month Load',
+        totals: horizonData.current,
+        bg: 'bg-blue-50/70 dark:bg-blue-950/40',
+        border: 'border-blue-200 dark:border-blue-800/50',
+        text: 'text-blue-900 dark:text-blue-300',
+        dot: 'bg-blue-600',
+        icon: <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
+      },
+      {
+        title: 'Next Months',
+        sub: 'Future Pipeline',
+        totals: horizonData.future,
+        bg: 'bg-emerald-50/70 dark:bg-emerald-950/40',
+        border: 'border-emerald-200 dark:border-emerald-800/50',
+        text: 'text-emerald-900 dark:text-emerald-300',
+        dot: 'bg-emerald-500',
+        icon: <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
+      },
+      {
+        title: 'Overdue + Current + Future',
+        sub: 'Total Horizon',
+        totals: {
+          qty: horizonData.past.qty + horizonData.current.qty + horizonData.future.qty,
+          value: horizonData.totalVal,
+        },
+        bg: 'bg-slate-100/80 dark:bg-navy-800',
+        border: 'border-slate-300 dark:border-navy-700',
+        text: 'text-slate-900 dark:text-white',
+        dot: 'bg-slate-700 dark:bg-slate-400',
+        icon: <Layers className="w-4 h-4 text-slate-700 dark:text-slate-300" />,
+      },
+    ];
+  }, [report, horizonData, currentMonthLabel]);
+
+  // SVG Donut Constants (Circumference for radius 42)
+  const radius = 42;
+  const circumference = 2 * Math.PI * radius; // ~263.89
+
+  // Portfolio Mix Donut Calculation
+  const directStroke = (portfolioDistribution.directValPct / 100) * circumference;
+  const indirectStroke = circumference - directStroke;
+
+  // Horizon Donut Calculation
+  const safeTotalVal = horizonData.totalVal || 1;
+  const pastStroke = (horizonData.past.value / safeTotalVal) * circumference;
+  const currentStroke = (horizonData.current.value / safeTotalVal) * circumference;
+  const futureStroke = (horizonData.future.value / safeTotalVal) * circumference;
 
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-slate-50 dark:bg-navy-950 transition-colors">
@@ -183,6 +263,40 @@ export default function DashboardPage() {
             {/* Top Scorecard KPIs */}
             <KPICards report={report} filter={customerFilter} />
 
+            {/* Horizon Load Summary Cards (Directly on Dashboard as requested) */}
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2 px-1">
+                <div className="w-1 h-3.5 bg-blue-700 rounded-full"></div>
+                <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                  Overdue / Current / Future Load Summary ({customerFilter} Customers)
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {horizonCards.map((c) => (
+                  <div key={c.sub} className={`rounded-xl ${c.bg} border ${c.border} p-3.5 shadow-sm`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`text-[10px] font-bold ${c.text} uppercase tracking-widest flex items-center gap-1`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`}></span>
+                        {c.sub}
+                      </span>
+                      {c.icon}
+                    </div>
+                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">{c.title}</p>
+                    <div className="flex justify-between items-end pt-1.5 border-t border-slate-200/50 dark:border-navy-700">
+                      <div>
+                        <p className="text-[9px] text-slate-400 uppercase font-semibold">Volume</p>
+                        <p className={`text-sm font-bold ${c.text}`}>{formatNumber(c.totals.qty)} KG</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[9px] text-slate-400 uppercase font-semibold">Value</p>
+                        <p className={`text-sm font-bold ${c.text}`}>${formatNumber(c.totals.value)}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Quick Action Bar */}
             <div className="bg-white dark:bg-navy-900 rounded-xl p-3 border border-slate-200 dark:border-navy-700 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="flex items-center space-x-2">
@@ -222,10 +336,10 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Visual Analytics Grid: Pie Charts & Horizon Breakdown */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Visual Analytics 3-Column Balanced Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
               
-              {/* 1. Portfolio Split (Direct Export vs Indirect Local) with Visual Donut Charts */}
+              {/* 1. Portfolio Mix (Direct vs Indirect) with Rich SVG Donut Chart */}
               <div className="bg-white dark:bg-navy-900 rounded-xl p-4 border border-slate-200 dark:border-navy-700 shadow-sm flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -237,60 +351,108 @@ export default function DashboardPage() {
                     </div>
                     <PieChart className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-4">
-                    Comparison of Export (Direct) against Local (Indirect) revenue and volume allocation.
-                  </p>
 
-                  {/* Visual Split Bars */}
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between text-xs font-semibold mb-1">
-                        <span className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Direct Value ({portfolioDistribution.directValPct}%)
+                  {/* Visual SVG Donut + Key Legend */}
+                  <div className="flex items-center justify-around py-2">
+                    {/* Donut Chart */}
+                    <div className="relative w-28 h-28 flex items-center justify-center">
+                      <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                        {/* Background track */}
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r={radius}
+                          className="stroke-slate-100 dark:stroke-navy-800"
+                          strokeWidth="12"
+                          fill="transparent"
+                        />
+                        {/* Indirect Segment (Indigo) */}
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r={radius}
+                          stroke="#6366f1"
+                          strokeWidth="12"
+                          fill="transparent"
+                          strokeDasharray={`${circumference} ${circumference}`}
+                          strokeDashoffset="0"
+                        />
+                        {/* Direct Segment (Emerald) */}
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r={radius}
+                          stroke="#10b981"
+                          strokeWidth="12"
+                          fill="transparent"
+                          strokeDasharray={`${directStroke} ${circumference}`}
+                          strokeDashoffset="0"
+                        />
+                      </svg>
+                      {/* Center Metric */}
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                        <span className="text-base font-extrabold text-slate-900 dark:text-white leading-none">
+                          {portfolioDistribution.directValPct}%
                         </span>
-                        <span className="text-indigo-700 dark:text-indigo-400 flex items-center gap-1">
-                          Indirect Value ({portfolioDistribution.indirectValPct}%) <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                        <span className="text-[9px] uppercase font-bold text-emerald-600 dark:text-emerald-400 tracking-wider">
+                          Export
                         </span>
-                      </div>
-                      <div className="w-full h-3 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden flex shadow-inner">
-                        <div
-                          style={{ width: `${portfolioDistribution.directValPct}%` }}
-                          className="bg-emerald-500 h-full transition-all duration-500"
-                          title={`Direct: $${formatNumber(report.directTotal.value)}`}
-                        ></div>
-                        <div
-                          style={{ width: `${portfolioDistribution.indirectValPct}%` }}
-                          className="bg-indigo-600 h-full transition-all duration-500"
-                          title={`Indirect: $${formatNumber(report.indirectTotal.value)}`}
-                        ></div>
                       </div>
                     </div>
 
-                    <div>
-                      <div className="flex justify-between text-xs font-semibold mb-1">
-                        <span className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-emerald-400"></span> Direct Volume ({portfolioDistribution.directQtyPct}%)
-                        </span>
-                        <span className="text-indigo-700 dark:text-indigo-400 flex items-center gap-1">
-                          Indirect Volume ({portfolioDistribution.indirectQtyPct}%) <span className="w-2 h-2 rounded-full bg-indigo-400"></span>
-                        </span>
+                    {/* Donut Legend */}
+                    <div className="space-y-2 text-xs">
+                      <div className="flex items-center space-x-2">
+                        <span className="w-3 h-3 rounded-md bg-emerald-500 shadow-sm"></span>
+                        <div>
+                          <p className="text-[11px] font-bold text-slate-800 dark:text-slate-100 leading-tight">
+                            Direct (Export)
+                          </p>
+                          <p className="text-[10px] text-slate-400 font-mono">
+                            {portfolioDistribution.directValPct}% &middot; ${formatNumber(report.directTotal.value)}
+                          </p>
+                        </div>
                       </div>
-                      <div className="w-full h-3 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden flex shadow-inner">
-                        <div
-                          style={{ width: `${portfolioDistribution.directQtyPct}%` }}
-                          className="bg-emerald-400 h-full transition-all duration-500"
-                          title={`Direct: ${formatNumber(report.directTotal.qty)} KG`}
-                        ></div>
-                        <div
-                          style={{ width: `${portfolioDistribution.indirectQtyPct}%` }}
-                          className="bg-indigo-400 h-full transition-all duration-500"
-                          title={`Indirect: ${formatNumber(report.indirectTotal.qty)} KG`}
-                        ></div>
+                      <div className="flex items-center space-x-2">
+                        <span className="w-3 h-3 rounded-md bg-indigo-500 shadow-sm"></span>
+                        <div>
+                          <p className="text-[11px] font-bold text-slate-800 dark:text-slate-100 leading-tight">
+                            Indirect (Local)
+                          </p>
+                          <p className="text-[10px] text-slate-400 font-mono">
+                            {portfolioDistribution.indirectValPct}% &middot; ${formatNumber(report.indirectTotal.value)}
+                          </p>
+                        </div>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Volume Split Progress Bar */}
+                  <div className="mt-2 space-y-1">
+                    <div className="flex justify-between text-[11px] font-semibold">
+                      <span className="text-emerald-700 dark:text-emerald-400 font-medium">
+                        Volume Share: Direct {portfolioDistribution.directQtyPct}%
+                      </span>
+                      <span className="text-indigo-700 dark:text-indigo-400 font-medium">
+                        Local {portfolioDistribution.indirectQtyPct}%
+                      </span>
+                    </div>
+                    <div className="w-full h-2.5 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden flex shadow-inner">
+                      <div
+                        style={{ width: `${portfolioDistribution.directQtyPct}%` }}
+                        className="bg-emerald-400 h-full"
+                        title={`Direct Volume: ${formatNumber(report.directTotal.qty)} KG`}
+                      ></div>
+                      <div
+                        style={{ width: `${portfolioDistribution.indirectQtyPct}%` }}
+                        className="bg-indigo-400 h-full"
+                        title={`Indirect Volume: ${formatNumber(report.indirectTotal.qty)} KG`}
+                      ></div>
                     </div>
                   </div>
                 </div>
 
+                {/* Bottom Total Cards */}
                 <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-navy-800 text-xs">
                   <div className="bg-emerald-50/60 dark:bg-emerald-950/30 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-900/50">
                     <span className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-400 block">Direct Total</span>
@@ -305,7 +467,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* 2. Horizon Delivery Timeline Risk & Timing */}
+              {/* 2. Velocity Horizon Breakdown with SVG Horizon Donut & Snug Fit */}
               <div className="bg-white dark:bg-navy-900 rounded-xl p-4 border border-slate-200 dark:border-navy-700 shadow-sm flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -317,22 +479,96 @@ export default function DashboardPage() {
                     </div>
                     <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-4">
-                    Pipeline segmentation across overdue backlog, current month target, and future commitments.
-                  </p>
 
-                  <div className="space-y-3">
-                    {/* Overdue */}
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span className="font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-amber-500"></span> Overdue Backlog
+                  {/* Visual Horizon Donut Chart */}
+                  <div className="flex items-center justify-around py-2">
+                    <div className="relative w-28 h-28 flex items-center justify-center">
+                      <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                        {/* Background track */}
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r={radius}
+                          className="stroke-slate-100 dark:stroke-navy-800"
+                          strokeWidth="12"
+                          fill="transparent"
+                        />
+                        {/* Future Segment (Emerald) */}
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r={radius}
+                          stroke="#10b981"
+                          strokeWidth="12"
+                          fill="transparent"
+                          strokeDasharray={`${circumference} ${circumference}`}
+                          strokeDashoffset="0"
+                        />
+                        {/* Current Segment (Blue) */}
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r={radius}
+                          stroke="#3b82f6"
+                          strokeWidth="12"
+                          fill="transparent"
+                          strokeDasharray={`${currentStroke + pastStroke} ${circumference}`}
+                          strokeDashoffset="0"
+                        />
+                        {/* Overdue Segment (Amber) */}
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r={radius}
+                          stroke="#f59e0b"
+                          strokeWidth="12"
+                          fill="transparent"
+                          strokeDasharray={`${pastStroke} ${circumference}`}
+                          strokeDashoffset="0"
+                        />
+                      </svg>
+                      {/* Center Metric */}
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                        <span className="text-sm font-extrabold text-blue-700 dark:text-blue-400 leading-none">
+                          ${formatNumber(horizonData.current.value > 0 ? horizonData.current.value : horizonData.totalVal).slice(0, 5)}k
                         </span>
-                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
-                          ${formatNumber(horizonData.past.value)}
+                        <span className="text-[8px] uppercase font-bold text-slate-400 tracking-wider">
+                          Horizon
                         </span>
                       </div>
-                      <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden">
+                    </div>
+
+                    {/* Donut Legend */}
+                    <div className="space-y-1.5 text-xs">
+                      <div className="flex items-center space-x-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                        <span className="text-[11px] font-semibold text-amber-800 dark:text-amber-300">
+                          Overdue ({horizonData.totalVal > 0 ? Math.round((horizonData.past.value / horizonData.totalVal) * 100) : 0}%)
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
+                        <span className="text-[11px] font-semibold text-blue-800 dark:text-blue-300">
+                          Current ({horizonData.totalVal > 0 ? Math.round((horizonData.current.value / horizonData.totalVal) * 100) : 0}%)
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                        <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+                          Future ({horizonData.totalVal > 0 ? Math.round((horizonData.future.value / horizonData.totalVal) * 100) : 0}%)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Progress Bars */}
+                  <div className="space-y-2 mt-2">
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-[11px]">
+                        <span className="font-semibold text-amber-700 dark:text-amber-400">Overdue Backlog</span>
+                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">${formatNumber(horizonData.past.value)}</span>
+                      </div>
+                      <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden">
                         <div
                           style={{ width: `${horizonData.totalVal > 0 ? (horizonData.past.value / horizonData.totalVal) * 100 : 0}%` }}
                           className="bg-amber-500 h-full"
@@ -340,17 +576,12 @@ export default function DashboardPage() {
                       </div>
                     </div>
 
-                    {/* Current Month */}
                     <div className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span className="font-semibold text-blue-700 dark:text-blue-400 flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-blue-600"></span> Current Month Load
-                        </span>
-                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
-                          ${formatNumber(horizonData.current.value)}
-                        </span>
+                      <div className="flex justify-between text-[11px]">
+                        <span className="font-semibold text-blue-700 dark:text-blue-400">Current Month Load</span>
+                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">${formatNumber(horizonData.current.value)}</span>
                       </div>
-                      <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden">
+                      <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden">
                         <div
                           style={{ width: `${horizonData.totalVal > 0 ? (horizonData.current.value / horizonData.totalVal) * 100 : 0}%` }}
                           className="bg-blue-600 h-full"
@@ -358,17 +589,12 @@ export default function DashboardPage() {
                       </div>
                     </div>
 
-                    {/* Future */}
                     <div className="space-y-1">
-                      <div className="flex justify-between text-xs">
-                        <span className="font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Future Pipeline
-                        </span>
-                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
-                          ${formatNumber(horizonData.future.value)}
-                        </span>
+                      <div className="flex justify-between text-[11px]">
+                        <span className="font-semibold text-emerald-700 dark:text-emerald-400">Future Pipeline</span>
+                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">${formatNumber(horizonData.future.value)}</span>
                       </div>
-                      <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden">
+                      <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden">
                         <div
                           style={{ width: `${horizonData.totalVal > 0 ? (horizonData.future.value / horizonData.totalVal) * 100 : 0}%` }}
                           className="bg-emerald-500 h-full"

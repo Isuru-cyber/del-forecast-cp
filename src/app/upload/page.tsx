@@ -23,6 +23,12 @@ export default function UploadPage() {
   const router = useRouter();
   const { role } = useApp();
 
+  useEffect(() => {
+    if (role === 'viewer') {
+      router.push('/');
+    }
+  }, [role, router]);
+
   const [ouFile, setOuFile] = useState<File | null>(null);
   const [stFile, setStFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);

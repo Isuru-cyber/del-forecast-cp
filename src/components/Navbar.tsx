@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/navigation';
 import LinkComponent from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useApp, AppTheme } from '@/context/RoleContext';
 import {
   Upload,
@@ -27,6 +27,7 @@ interface NavbarProps {
 
 export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const { role, setRole, customerFilter, setCustomerFilter, theme, setTheme } = useApp();
   const [showThemeMenu, setShowThemeMenu] = useState(false);
 
@@ -62,7 +63,7 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
           {/* Logo / Brand Name: ALL CAPITAL, BOLD, EXECUTIVE CORPORATE GRADIENT */}
           <div className="flex items-center">
             <LinkComponent href="/" className="hover:opacity-95 transition-opacity">
-              <h1 className="font-extrabold tracking-wider bg-gradient-to-r from-blue-800 via-indigo-600 to-blue-900 dark:from-blue-400 dark:via-sky-300 dark:to-indigo-300 bg-clip-text text-transparent text-sm sm:text-base uppercase select-none">
+              <h1 className="font-black tracking-wide bg-gradient-to-r from-blue-800 via-indigo-600 to-blue-900 dark:from-blue-400 dark:via-sky-300 dark:to-indigo-300 bg-clip-text text-transparent text-base sm:text-lg md:text-xl uppercase select-none">
                 DELIVERY FORECAST - CP
               </h1>
             </LinkComponent>
@@ -229,7 +230,12 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
                 <span>Admin</span>
               </button>
               <button
-                onClick={() => setRole('viewer')}
+                onClick={() => {
+                  setRole('viewer');
+                  if (pathname === '/customers' || pathname === '/upload') {
+                    router.push('/');
+                  }
+                }}
                 title="Switch to Viewer role"
                 className={`flex items-center space-x-1 px-2 py-0.5 rounded-lg text-[11px] font-semibold transition-all ${
                   role === 'viewer'

@@ -184,16 +184,7 @@ export function SummaryTables({ report, filter }: SummaryTablesProps) {
         title={`Summary Tables (${filter} Customers)`}
         noPadding={false}
       >
-        <div className="p-4 space-y-3">
-          <div className="flex justify-end">
-            <button
-              onClick={() => setIsFullscreen(false)}
-              className="flex items-center space-x-1.5 px-3 py-1 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-bold transition-all shadow-sm"
-            >
-              <Minimize2 className="w-3.5 h-3.5" />
-              <span>Exit Full Screen</span>
-            </button>
-          </div>
+        <div className="p-4">
           {renderContent()}
         </div>
       </FullscreenModal>
