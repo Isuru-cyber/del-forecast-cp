@@ -7,6 +7,7 @@ import {
   Building2,
   CalendarDays,
   Sparkles,
+  TrendingUp,
 } from 'lucide-react';
 
 interface KPICardsProps {
@@ -15,7 +16,7 @@ interface KPICardsProps {
 }
 
 export function KPICards({ report, filter }: KPICardsProps) {
-  const { grandTotal, directTotal, indirectTotal, dateSummaries } = report;
+  const { grandTotal, directTotal, indirectTotal } = report;
 
   const formatNum = (n: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -41,37 +42,30 @@ export function KPICards({ report, filter }: KPICardsProps) {
   const indirectQtyShare = grandTotal.qty > 0 ? ((indirectTotal.qty / grandTotal.qty) * 100).toFixed(1) : '0';
   const indirectValShare = grandTotal.value > 0 ? ((indirectTotal.value / grandTotal.value) * 100).toFixed(1) : '0';
 
-  // Horizon breakdown
-  const currentMonthKey = getActiveForecastMonthKey(report.dates);
-  let overdueVal = 0;
-  let currentVal = 0;
-  let futureVal = 0;
+  // Key Accounts Concentration (Top 5 Accounts Share)
+  const sortedAccounts = [...report.customerSummaries]
+    .filter(c => filter === 'ALL' || c.type === filter)
+    .sort((a, b) => b.value - a.value);
 
-  dateSummaries.forEach(d => {
-    const monthKey = d.label.slice(0, 7);
-    if (monthKey === currentMonthKey) {
-      currentVal += d.value;
-    } else if (monthKey < currentMonthKey) {
-      overdueVal += d.value;
-    } else {
-      futureVal += d.value;
-    }
-  });
+  const top5Value = sortedAccounts.slice(0, 5).reduce((acc, c) => acc + c.value, 0);
+  const top5Qty = sortedAccounts.slice(0, 5).reduce((acc, c) => acc + c.qty, 0);
+  const top5ValShare = activeValue > 0 ? ((top5Value / activeValue) * 100).toFixed(1) : '0';
+  const top1Cust = sortedAccounts[0]?.label || 'None';
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
       {/* 1. Grand Total Card */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-navy-900 to-blue-950 text-white rounded-xl p-4 shadow-sm border border-slate-800 dark:border-navy-700">
+      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-navy-900 to-blue-950 text-white rounded-xl p-5 shadow-sm border border-slate-800 dark:border-navy-700 min-h-[148px] flex flex-col justify-between">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-blue-300 flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-blue-400" />
+          <span className="text-[11px] font-bold uppercase tracking-wider text-blue-300 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-blue-400" />
             {filter === 'ALL' ? 'Total Portfolio' : `${filter} Portfolio`}
           </span>
           <span className="text-[10px] font-mono bg-blue-500/20 text-blue-200 px-2 py-0.5 rounded-full border border-blue-400/20">
             {report.customers.length} Accounts
           </span>
         </div>
-        <div className="space-y-0.5">
+        <div className="space-y-1">
           <p className="text-[10px] uppercase font-semibold text-slate-400">Total Value (USD)</p>
           <p className="text-xl font-bold text-white tracking-tight">
             ${formatNum(activeValue)}
@@ -84,21 +78,21 @@ export function KPICards({ report, filter }: KPICardsProps) {
       </div>
 
       {/* 2. Direct (Export) Card */}
-      <div className={`bg-white dark:bg-navy-800 rounded-xl p-4 shadow-sm border transition-all ${
+      <div className={`bg-white dark:bg-navy-800 rounded-xl p-5 shadow-sm border transition-all min-h-[148px] flex flex-col justify-between ${
         filter === 'DIRECT'
           ? 'ring-2 ring-emerald-500 border-emerald-400 dark:border-emerald-500'
           : 'border-slate-200 dark:border-navy-700'
       }`}>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
-            <Globe2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+          <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+            <Globe2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             Direct (Export)
           </span>
           <span className="text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/50">
             {directValShare}% Share
           </span>
         </div>
-        <div className="space-y-0.5">
+        <div className="space-y-1">
           <p className="text-[10px] uppercase font-semibold text-slate-400 dark:text-slate-400">Forecast Value</p>
           <p className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
             ${formatNum(directTotal.value)}
@@ -111,21 +105,21 @@ export function KPICards({ report, filter }: KPICardsProps) {
       </div>
 
       {/* 3. Indirect (Local) Card */}
-      <div className={`bg-white dark:bg-navy-800 rounded-xl p-4 shadow-sm border transition-all ${
+      <div className={`bg-white dark:bg-navy-800 rounded-xl p-5 shadow-sm border transition-all min-h-[148px] flex flex-col justify-between ${
         filter === 'INDIRECT'
           ? 'ring-2 ring-indigo-500 border-indigo-400 dark:border-indigo-500'
           : 'border-slate-200 dark:border-navy-700'
       }`}>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 flex items-center gap-1">
-            <Building2 className="w-3 h-3 text-indigo-600 dark:text-indigo-400" />
+          <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 flex items-center gap-1.5">
+            <Building2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
             Indirect (Local)
           </span>
           <span className="text-[10px] font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800/50">
             {indirectValShare}% Share
           </span>
         </div>
-        <div className="space-y-0.5">
+        <div className="space-y-1">
           <p className="text-[10px] uppercase font-semibold text-slate-400 dark:text-slate-400">Forecast Value</p>
           <p className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
             ${formatNum(indirectTotal.value)}
@@ -137,29 +131,29 @@ export function KPICards({ report, filter }: KPICardsProps) {
         </div>
       </div>
 
-      {/* 4. Horizon Backlog Card */}
-      <div className="bg-white dark:bg-navy-800 rounded-xl p-4 shadow-sm border border-slate-200 dark:border-navy-700">
+      {/* 4. Key Account Concentration Risk Card */}
+      <div className="bg-white dark:bg-navy-800 rounded-xl p-5 shadow-sm border border-slate-200 dark:border-navy-700 min-h-[148px] flex flex-col justify-between">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1">
-            <CalendarDays className="w-3 h-3 text-blue-700 dark:text-blue-400" />
-            Velocity Horizon
+          <span className="text-[11px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-400 flex items-center gap-1.5">
+            <TrendingUp className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+            Top 5 Concentration
           </span>
-          <span className="text-[10px] font-semibold bg-slate-100 dark:bg-navy-700 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded-full border border-slate-200 dark:border-navy-600">
-            {report.dates.length} Dates
+          <span className="text-[10px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full border border-purple-200 dark:border-purple-800/50">
+            {top5ValShare}% of Total
           </span>
         </div>
-        <div className="grid grid-cols-3 gap-1.5 pt-1 text-center">
-          <div className="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/50">
-            <p className="text-[9px] font-bold uppercase text-amber-800 dark:text-amber-400">Overdue</p>
-            <p className="text-[11px] font-bold text-amber-900 dark:text-amber-300 mt-0.5">${formatNum(overdueVal)}</p>
-          </div>
-          <div className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/50">
-            <p className="text-[9px] font-bold uppercase text-blue-800 dark:text-blue-400">Current</p>
-            <p className="text-[11px] font-bold text-blue-900 dark:text-blue-300 mt-0.5">${formatNum(currentVal)}</p>
-          </div>
-          <div className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/50">
-            <p className="text-[9px] font-bold uppercase text-emerald-800 dark:text-emerald-400">Future</p>
-            <p className="text-[11px] font-bold text-emerald-900 dark:text-emerald-300 mt-0.5">${formatNum(futureVal)}</p>
+        <div className="space-y-1">
+          <p className="text-[10px] uppercase font-semibold text-slate-400 dark:text-slate-400">Top 5 Accounts Value</p>
+          <p className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+            ${formatNum(top5Value)}
+          </p>
+          <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-navy-700">
+            <span className="text-[10px] text-slate-400 font-medium truncate max-w-[150px]" title={`#1 Account: ${top1Cust}`}>
+              #1 {top1Cust}
+            </span>
+            <span className="text-xs font-mono font-bold text-purple-700 dark:text-purple-400">
+              {formatNum(top5Qty)} KG
+            </span>
           </div>
         </div>
       </div>

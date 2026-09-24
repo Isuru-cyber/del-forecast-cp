@@ -23,22 +23,27 @@ export async function POST(request: Request) {
     if (newCustomers && Array.isArray(newCustomers) && newCustomers.length > 0) {
       for (const nc of newCustomers) {
         if (nc.name && nc.type) {
+          let cName = nc.name.trim();
+          if (cName.endsWith(',')) cName = cName.slice(0, -1).trim();
           await client.query(
             `INSERT INTO customers (name, type) 
              VALUES ($1, $2) 
              ON CONFLICT (name) 
              DO UPDATE SET type = EXCLUDED.type, updated_at = NOW();`,
-            [nc.name.trim(), nc.type.toUpperCase()]
+            [cName, nc.type.toUpperCase()]
           );
         }
       }
     }
 
-    // 2. Fetch customer type mapping from database
+    // 2. Fetch customer type mapping from database (case-insensitive & trailing comma normalized)
     const custRes = await client.query('SELECT name, type FROM customers;');
     const custTypeMap: Record<string, CustomerType> = {};
     custRes.rows.forEach(r => {
-      custTypeMap[r.name] = r.type as CustomerType;
+      const original = r.name.trim();
+      const normalized = original.replace(/,+$/, '').trim().toUpperCase();
+      custTypeMap[original] = r.type as CustomerType;
+      custTypeMap[normalized] = r.type as CustomerType;
     });
 
     // 3. Compute totals
@@ -75,7 +80,8 @@ export async function POST(request: Request) {
           `($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7})`
         );
         
-        const custType = custTypeMap[rec.customer] || 'DIRECT';
+        const normCust = (rec.customer || '').trim().replace(/,+$/, '').toUpperCase();
+        const custType = custTypeMap[normCust] || custTypeMap[rec.customer] || 'DIRECT';
         params.push(
           batchId,
           rec.customer,

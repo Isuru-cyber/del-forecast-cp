@@ -60,8 +60,8 @@ export function FullscreenModal({
 
       {/* Fullscreen Body - 100% Edge-to-edge flush with zero margins */}
       <div
-        className={`flex-1 overflow-auto custom-scrollbar bg-slate-50/50 dark:bg-navy-950 ${
-          noPadding ? 'p-0 m-0' : 'p-3'
+        className={`flex-1 min-h-0 w-full bg-slate-50/50 dark:bg-navy-950 ${
+          noPadding ? 'p-0 m-0 overflow-hidden flex flex-col' : 'p-3 overflow-auto custom-scrollbar'
         }`}
       >
         {children}

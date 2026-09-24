@@ -6,23 +6,19 @@ import { useApp } from '@/context/RoleContext';
 import { ReportData, getActiveForecastMonthKey } from '@/lib/types';
 import { Navbar } from '@/components/Navbar';
 import { KPICards } from '@/components/KPICards';
-import { exportForecastToExcel } from '@/lib/excel-exporter';
 import {
   Table,
   BarChart3,
   TrendingUp,
   UserSearch,
   ListOrdered,
-  FileDown,
   Upload,
-  RefreshCw,
   Loader2,
   AlertTriangle,
   ArrowRight,
   Globe2,
   Building2,
   Clock,
-  Layers,
   Sparkles,
   PieChart,
   AlertCircle,
@@ -142,9 +138,14 @@ export default function DashboardPage() {
     };
   }, [report]);
 
-  // Overdue / Current / Future Load Summary Cards (as requested on Dashboard)
+  // Horizon Load Summary Cards
   const horizonCards = useMemo(() => {
     if (!report) return [];
+    const activeDaysCount = report.dates.length || 1;
+    const totalQtyAll = horizonData.past.qty + horizonData.current.qty + horizonData.future.qty;
+    const dailyAvgQty = Math.round(totalQtyAll / activeDaysCount);
+    const dailyAvgVal = Math.round(horizonData.totalVal / activeDaysCount);
+
     return [
       {
         title: 'Previous Months',
@@ -155,6 +156,7 @@ export default function DashboardPage() {
         text: 'text-amber-900 dark:text-amber-300',
         dot: 'bg-amber-500',
         icon: <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />,
+        isVelocity: false,
       },
       {
         title: currentMonthLabel,
@@ -165,6 +167,7 @@ export default function DashboardPage() {
         text: 'text-blue-900 dark:text-blue-300',
         dot: 'bg-blue-600',
         icon: <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
+        isVelocity: false,
       },
       {
         title: 'Next Months',
@@ -175,19 +178,21 @@ export default function DashboardPage() {
         text: 'text-emerald-900 dark:text-emerald-300',
         dot: 'bg-emerald-500',
         icon: <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
+        isVelocity: false,
       },
       {
-        title: 'Overdue + Current + Future',
-        sub: 'Total Horizon',
+        title: `${report.dates.length} Active Dispatch Days`,
+        sub: 'Daily Dispatch Velocity',
         totals: {
-          qty: horizonData.past.qty + horizonData.current.qty + horizonData.future.qty,
-          value: horizonData.totalVal,
+          qty: dailyAvgQty,
+          value: dailyAvgVal,
         },
-        bg: 'bg-slate-100/80 dark:bg-navy-800',
-        border: 'border-slate-300 dark:border-navy-700',
-        text: 'text-slate-900 dark:text-white',
-        dot: 'bg-slate-700 dark:bg-slate-400',
-        icon: <Layers className="w-4 h-4 text-slate-700 dark:text-slate-300" />,
+        bg: 'bg-indigo-50/70 dark:bg-indigo-950/40',
+        border: 'border-indigo-200 dark:border-indigo-800/50',
+        text: 'text-indigo-900 dark:text-indigo-300',
+        dot: 'bg-indigo-600',
+        icon: <TrendingUp className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />,
+        isVelocity: true,
       },
     ];
   }, [report, horizonData, currentMonthLabel]);
@@ -263,77 +268,40 @@ export default function DashboardPage() {
             {/* Top Scorecard KPIs */}
             <KPICards report={report} filter={customerFilter} />
 
-            {/* Horizon Load Summary Cards (Directly on Dashboard as requested) */}
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2 px-1">
-                <div className="w-1 h-3.5 bg-blue-700 rounded-full"></div>
-                <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                  Overdue / Current / Future Load Summary ({customerFilter} Customers)
-                </h3>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                {horizonCards.map((c) => (
-                  <div key={c.sub} className={`rounded-xl ${c.bg} border ${c.border} p-3.5 shadow-sm`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className={`text-[10px] font-bold ${c.text} uppercase tracking-widest flex items-center gap-1`}>
+            {/* Horizon Load Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+              {horizonCards.map((c) => (
+                <div key={c.sub} className={`rounded-xl ${c.bg} border ${c.border} p-4.5 min-h-[135px] shadow-sm flex flex-col justify-between`}>
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className={`text-[10px] font-bold ${c.text} uppercase tracking-wider flex items-center gap-1.5`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`}></span>
                         {c.sub}
                       </span>
                       {c.icon}
                     </div>
-                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">{c.title}</p>
-                    <div className="flex justify-between items-end pt-1.5 border-t border-slate-200/50 dark:border-navy-700">
-                      <div>
-                        <p className="text-[9px] text-slate-400 uppercase font-semibold">Volume</p>
-                        <p className={`text-sm font-bold ${c.text}`}>{formatNumber(c.totals.qty)} KG</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-[9px] text-slate-400 uppercase font-semibold">Value</p>
-                        <p className={`text-sm font-bold ${c.text}`}>${formatNumber(c.totals.value)}</p>
-                      </div>
+                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-400">{c.title}</p>
+                  </div>
+                  <div className="flex justify-between items-end pt-2 border-t border-slate-200/50 dark:border-navy-700">
+                    <div>
+                      <p className="text-[9px] text-slate-400 uppercase font-semibold">
+                        {c.isVelocity ? 'Avg Daily Volume' : 'Volume'}
+                      </p>
+                      <p className={`text-sm font-bold ${c.text}`}>
+                        {formatNumber(c.totals.qty)} {c.isVelocity ? 'KG/Day' : 'KG'}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[9px] text-slate-400 uppercase font-semibold">
+                        {c.isVelocity ? 'Avg Daily Run Rate' : 'Value'}
+                      </p>
+                      <p className={`text-sm font-bold ${c.text}`}>
+                        ${formatNumber(c.totals.value)}{c.isVelocity ? '/Day' : ''}
+                      </p>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Quick Action Bar */}
-            <div className="bg-white dark:bg-navy-900 rounded-xl p-3 border border-slate-200 dark:border-navy-700 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center space-x-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
-                  Executive Forecast Summary
-                </span>
-                <span className="text-[10px] text-slate-400 font-medium hidden sm:inline">
-                  &middot; Scope: {customerFilter} Customers
-                </span>
-              </div>
-
-              <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
-                <button
-                  onClick={fetchForecast}
-                  title="Reload forecast"
-                  className="p-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-navy-800 dark:hover:bg-navy-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-navy-700 rounded-lg transition-all"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                </button>
-
-                <button
-                  onClick={() => exportForecastToExcel(report, customerFilter)}
-                  className="flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-950 dark:bg-navy-700 dark:hover:bg-navy-600 text-white px-3.5 py-1.5 rounded-lg font-semibold text-xs transition-all shadow-sm"
-                >
-                  <FileDown className="w-3.5 h-3.5 text-blue-300" />
-                  <span>Download Excel</span>
-                </button>
-
-                <Link
-                  href="/analysis"
-                  className="flex items-center space-x-1.5 bg-blue-700 hover:bg-blue-800 text-white px-4 py-1.5 rounded-lg font-bold text-xs shadow-sm transition-all"
-                >
-                  <span>Open Detailed Analysis Hub</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
+                </div>
+              ))}
             </div>
 
             {/* Visual Analytics 3-Column Balanced Grid */}
@@ -467,7 +435,69 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* 2. Velocity Horizon Breakdown with SVG Horizon Donut & Snug Fit */}
+              {/* 2. Top Customer Accounts (Key Value Drivers - Placed in Middle) */}
+              <div className="bg-white dark:bg-navy-900 rounded-xl p-4 border border-slate-200 dark:border-navy-700 shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-1 h-3.5 bg-indigo-600 rounded-full"></div>
+                      <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                        Top Customer Revenue Drivers
+                      </h3>
+                    </div>
+                    <span className="text-[10px] font-bold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-navy-800 px-2 py-0.5 rounded-full border border-blue-200 dark:border-navy-700">
+                      Top 8 Accounts
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 max-h-[220px] overflow-y-auto custom-scrollbar pr-1">
+                    {topCustomers.map((cust, i) => (
+                      <div
+                        key={cust.label}
+                        className="flex items-center justify-between p-1.5 rounded-lg bg-slate-50/70 dark:bg-navy-800/60 hover:bg-blue-50/60 dark:hover:bg-navy-800 transition-colors text-xs"
+                      >
+                        <div className="flex items-center space-x-1.5 min-w-0">
+                          <span className="text-[10px] font-mono font-bold text-slate-400 w-4">
+                            #{i + 1}
+                          </span>
+                          <span
+                            className={`text-[8px] font-bold px-1 rounded uppercase shrink-0 ${
+                              cust.type === 'DIRECT'
+                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                                : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300'
+                            }`}
+                          >
+                            {cust.type === 'DIRECT' ? 'Dir' : 'Loc'}
+                          </span>
+                          <span className="truncate max-w-[140px] font-semibold text-slate-800 dark:text-slate-200" title={cust.label}>
+                            {cust.label}
+                          </span>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="font-mono font-bold text-blue-700 dark:text-blue-400 block text-xs">
+                            ${formatNumber(cust.value)}
+                          </span>
+                          <span className="font-mono text-[9px] text-slate-400">
+                            {formatNumber(cust.qty)} KG
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-3 pt-2 border-t border-slate-100 dark:border-navy-800 text-right">
+                  <Link
+                    href="/analysis?tab=tables"
+                    className="text-xs font-bold text-blue-700 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
+                  >
+                    <span>View all {report.customers.length} customer accounts</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* 3. Delivery Horizon Breakdown with SVG Horizon Donut & Snug Fit */}
               <div className="bg-white dark:bg-navy-900 rounded-xl p-4 border border-slate-200 dark:border-navy-700 shadow-sm flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -607,68 +637,6 @@ export default function DashboardPage() {
                 <div className="mt-4 pt-3 border-t border-slate-100 dark:border-navy-800 flex items-center justify-between text-xs">
                   <span className="text-slate-500 dark:text-slate-400 font-medium">Total Forecast Horizon:</span>
                   <span className="font-mono font-bold text-blue-900 dark:text-blue-300">${formatNumber(horizonData.totalVal)}</span>
-                </div>
-              </div>
-
-              {/* 3. Top Customer Accounts (Key Value Drivers) */}
-              <div className="bg-white dark:bg-navy-900 rounded-xl p-4 border border-slate-200 dark:border-navy-700 shadow-sm flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-1 h-3.5 bg-indigo-600 rounded-full"></div>
-                      <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                        Top Customer Revenue Drivers
-                      </h3>
-                    </div>
-                    <span className="text-[10px] font-bold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-navy-800 px-2 py-0.5 rounded-full border border-blue-200 dark:border-navy-700">
-                      Top 8 Accounts
-                    </span>
-                  </div>
-
-                  <div className="space-y-1.5 max-h-[220px] overflow-y-auto custom-scrollbar pr-1">
-                    {topCustomers.map((cust, i) => (
-                      <div
-                        key={cust.label}
-                        className="flex items-center justify-between p-1.5 rounded-lg bg-slate-50/70 dark:bg-navy-800/60 hover:bg-blue-50/60 dark:hover:bg-navy-800 transition-colors text-xs"
-                      >
-                        <div className="flex items-center space-x-1.5 min-w-0">
-                          <span className="text-[10px] font-mono font-bold text-slate-400 w-4">
-                            #{i + 1}
-                          </span>
-                          <span
-                            className={`text-[8px] font-bold px-1 rounded uppercase shrink-0 ${
-                              cust.type === 'DIRECT'
-                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                                : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300'
-                            }`}
-                          >
-                            {cust.type === 'DIRECT' ? 'Dir' : 'Loc'}
-                          </span>
-                          <span className="truncate max-w-[140px] font-semibold text-slate-800 dark:text-slate-200" title={cust.label}>
-                            {cust.label}
-                          </span>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <span className="font-mono font-bold text-blue-700 dark:text-blue-400 block text-xs">
-                            ${formatNumber(cust.value)}
-                          </span>
-                          <span className="font-mono text-[9px] text-slate-400">
-                            {formatNumber(cust.qty)} KG
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-3 pt-2 border-t border-slate-100 dark:border-navy-800 text-right">
-                  <Link
-                    href="/analysis?tab=tables"
-                    className="text-xs font-bold text-blue-700 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
-                  >
-                    <span>View all {report.customers.length} customer accounts</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </Link>
                 </div>
               </div>
             </div>

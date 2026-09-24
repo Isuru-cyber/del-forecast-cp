@@ -21,12 +21,19 @@ export async function GET() {
 
     const batch = batchRes.rows[0];
 
-    // 2. Fetch all records for this active batch
+    // 2. Fetch all records for this active batch joined with customer master for dynamic classification
     const recordsRes = await query(
-      `SELECT customer_name, customer_type, delivery_date::text as delivery_date, source_type, qty, value 
-       FROM forecast_records 
-       WHERE batch_id = $1 
-       ORDER BY customer_name ASC, delivery_date ASC;`,
+      `SELECT 
+        r.customer_name, 
+        COALESCE(c.type, r.customer_type, 'DIRECT') AS customer_type, 
+        r.delivery_date::text AS delivery_date, 
+        r.source_type, 
+        r.qty, 
+        r.value 
+       FROM forecast_records r
+       LEFT JOIN customers c ON UPPER(TRIM(TRAILING ',' FROM TRIM(c.name))) = UPPER(TRIM(TRAILING ',' FROM TRIM(r.customer_name)))
+       WHERE r.batch_id = $1 
+       ORDER BY r.customer_name ASC, r.delivery_date ASC;`,
       [batch.id]
     );
 

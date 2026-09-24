@@ -23,8 +23,6 @@ import {
   RefreshCw,
   Loader2,
   AlertTriangle,
-  ChevronRight,
-  LayoutDashboard,
 } from 'lucide-react';
 
 type AnalysisTab = 'pivot' | 'analysis' | 'trend' | 'customerTA' | 'tables';
@@ -69,31 +67,6 @@ function AnalysisContent() {
       />
 
       <main className="flex-1 max-w-[1850px] w-full mx-auto px-3 sm:px-6 py-3.5 space-y-3">
-        {/* Breadcrumb & Navigation Info Bar */}
-        <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-          <div className="flex items-center space-x-1.5 font-medium">
-            <Link href="/" className="hover:text-blue-700 dark:hover:text-blue-400 flex items-center gap-1 transition-colors">
-              <LayoutDashboard className="w-3.5 h-3.5" />
-              <span>Dashboard</span>
-            </Link>
-            <ChevronRight className="w-3 h-3 text-slate-400" />
-            <span className="text-slate-800 dark:text-slate-200 font-bold">Analysis Hub</span>
-            <ChevronRight className="w-3 h-3 text-slate-400" />
-            <span className="text-blue-700 dark:text-blue-400 uppercase font-bold text-[11px]">
-              {activeTab === 'pivot' && 'Pivot Matrix'}
-              {activeTab === 'analysis' && 'Summary Analysis'}
-              {activeTab === 'trend' && 'Trend Analysis'}
-              {activeTab === 'customerTA' && 'Customer wise TA'}
-              {activeTab === 'tables' && 'Summary Tables'}
-            </span>
-          </div>
-
-          {report && (
-            <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-              Active Scope: <span className="text-slate-800 dark:text-slate-200 font-bold">{customerFilter} Customers</span> ({report.customers.length} Accounts)
-            </div>
-          )}
-        </div>
 
         {loading ? (
           <div className="py-32 flex flex-col items-center justify-center space-y-3">

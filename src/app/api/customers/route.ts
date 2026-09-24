@@ -31,7 +31,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const trimmedName = String(name).trim();
+    let trimmedName = String(name).trim();
+    if (trimmedName.endsWith(',')) {
+      trimmedName = trimmedName.slice(0, -1).trim();
+    }
     const upperType = type.toUpperCase();
 
     const res = await query<Customer>(
@@ -40,6 +43,14 @@ export async function POST(request: Request) {
        ON CONFLICT (name) 
        DO UPDATE SET type = EXCLUDED.type, updated_at = NOW() 
        RETURNING id, name, type, created_at, updated_at;`,
+      [trimmedName, upperType]
+    );
+
+    // Keep active forecast_records in sync as well
+    await query(
+      `UPDATE forecast_records 
+       SET customer_type = $2 
+       WHERE UPPER(TRIM(TRAILING ',' FROM TRIM(customer_name))) = UPPER(TRIM($1));`,
       [trimmedName, upperType]
     );
 

@@ -63,8 +63,8 @@ export function PivotMatrix({ report, filter }: PivotMatrixProps) {
 
   const renderTableContent = (isFs: boolean = false) => (
     <div
-      className={`pivot-container custom-scrollbar ${
-        isFs ? 'h-[calc(100vh-45px)] max-h-none' : 'max-h-[72vh]'
+      className={`pivot-container custom-scrollbar w-full ${
+        isFs ? 'h-full max-h-none' : 'max-h-[72vh]'
       }`}
     >
       <table className="w-full border-separate border-spacing-0">
@@ -182,11 +182,11 @@ export function PivotMatrix({ report, filter }: PivotMatrixProps) {
                     maxWidth: `${CUST_COL_WIDTH}px`,
                     zIndex: 25,
                   }}
-                  className={`sticky ${solidRowBg} border-b border-r-2 border-slate-300 dark:border-navy-600 px-3 py-1.5 font-medium text-slate-800 dark:text-slate-100 text-[11px] whitespace-nowrap shadow-[3px_0_6px_-2px_rgba(0,0,0,0.12)]`}
+                  className={`sticky ${solidRowBg} border-b border-r-2 border-slate-300 dark:border-navy-600 px-2.5 py-1 font-medium text-slate-800 dark:text-slate-100 text-[10px] whitespace-nowrap shadow-[3px_0_6px_-2px_rgba(0,0,0,0.12)]`}
                 >
                   <div className="flex items-center space-x-1.5">
                     <span
-                      className={`text-[8px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider shrink-0 ${
+                      className={`text-[7.5px] font-bold px-1 py-0.5 rounded border uppercase tracking-wider shrink-0 ${
                         cust.type === 'DIRECT'
                           ? 'bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700'
                           : 'bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-700'
@@ -194,7 +194,7 @@ export function PivotMatrix({ report, filter }: PivotMatrixProps) {
                     >
                       {cust.type === 'DIRECT' ? 'Direct' : 'Local'}
                     </span>
-                    <span className="truncate max-w-[210px] font-medium" title={cust.label}>
+                    <span className="truncate max-w-[220px] font-medium text-[10px]" title={cust.label}>
                       {cust.label}
                     </span>
                   </div>
@@ -374,9 +374,11 @@ export function PivotMatrix({ report, filter }: PivotMatrixProps) {
         title={`Pivot Matrix (${filter} Customers - ${filteredCustomers.length} Accounts)`}
         noPadding={true}
       >
-        <div className="w-full h-full flex flex-col bg-white dark:bg-navy-800 overflow-hidden">
-          {renderToolbar(true)}
-          <div className="flex-1 overflow-hidden">
+        <div className="w-full h-full flex flex-col bg-white dark:bg-navy-800">
+          <div className="shrink-0">
+            {renderToolbar(true)}
+          </div>
+          <div className="flex-1 min-h-0 w-full overflow-hidden">
             {renderTableContent(true)}
           </div>
         </div>
