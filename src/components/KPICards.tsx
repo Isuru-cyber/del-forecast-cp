@@ -54,29 +54,33 @@ export function KPICards({ report, filter }: KPICardsProps) {
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-      {/* 1. Grand Total Card */}
-      <div className={`bg-white dark:bg-navy-800 rounded-xl p-3.5 sm:p-4 shadow-sm border transition-all min-h-[115px] flex flex-col justify-between ${
+      {/* 1. Grand Total Card - Shining Royal Blue with Deep Dark Depth */}
+      <div className={`relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-950 text-white rounded-xl p-3.5 sm:p-4 shadow-md transition-all min-h-[115px] flex flex-col justify-between ${
         filter === 'ALL'
-          ? 'ring-2 ring-blue-500 border-blue-400 dark:border-blue-500'
-          : 'border-slate-200 dark:border-navy-700'
+          ? 'ring-2 ring-sky-400 border border-sky-400/50'
+          : 'border border-blue-500/30'
       }`}>
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+        {/* Soft Ambient Radial Shine Glow */}
+        <div className="absolute -top-10 -right-10 w-28 h-28 bg-sky-400/25 rounded-full blur-xl pointer-events-none" />
+        <div className="absolute -bottom-8 -left-8 w-24 h-24 bg-blue-500/20 rounded-full blur-lg pointer-events-none" />
+
+        <div className="relative z-10 flex items-center justify-between mb-1.5">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-sky-100 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-sky-300 animate-pulse" />
             {filter === 'ALL' ? 'Total Portfolio' : `${filter} Portfolio`}
           </span>
-          <span className="text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-800/50">
+          <span className="text-[10px] font-mono bg-white/20 text-white px-2 py-0.5 rounded-full border border-white/25 font-semibold shadow-xs">
             {sortedAccounts.length} Accounts
           </span>
         </div>
-        <div className="space-y-0.5">
-          <p className="text-[9px] uppercase font-semibold text-slate-400 dark:text-slate-400">Total Value (USD)</p>
-          <p className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+        <div className="relative z-10 space-y-0.5">
+          <p className="text-[9px] uppercase font-semibold text-blue-200/90">Total Value (USD)</p>
+          <p className="text-xl font-black text-white tracking-tight drop-shadow-xs">
             ${formatNum(activeValue)}
           </p>
-          <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-navy-700">
-            <span className="text-[10px] text-slate-400 font-medium">Total Volume</span>
-            <span className="text-xs font-mono font-bold text-blue-700 dark:text-blue-400">{formatNum(activeQty)} KG</span>
+          <div className="flex items-center justify-between pt-1.5 border-t border-white/20">
+            <span className="text-[10px] text-blue-200 font-medium">Total Volume</span>
+            <span className="text-xs font-mono font-bold text-sky-200">{formatNum(activeQty)} KG</span>
           </div>
         </div>
       </div>
