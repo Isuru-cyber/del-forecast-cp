@@ -8,9 +8,16 @@ interface FullscreenModalProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  noPadding?: boolean;
 }
 
-export function FullscreenModal({ isOpen, onClose, title, children }: FullscreenModalProps) {
+export function FullscreenModal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  noPadding = true, // Default to true for true edge-to-edge flush presentation
+}: FullscreenModalProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -31,8 +38,8 @@ export function FullscreenModal({ isOpen, onClose, title, children }: Fullscreen
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col bg-white dark:bg-navy-950 overflow-hidden w-screen h-screen m-0 p-0 animate-in fade-in duration-150">
-      {/* 0 margin, 100% flush with all edges */}
-      <div className="w-full px-5 py-2.5 border-b border-slate-200 dark:border-navy-700 bg-slate-50 dark:bg-navy-900 flex items-center justify-between flex-shrink-0">
+      {/* 0 margin, 100% flush header bar */}
+      <div className="w-full px-4 py-2 border-b border-slate-200 dark:border-navy-700 bg-slate-50 dark:bg-navy-900 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center space-x-2.5">
           <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
           <h2 className="text-xs font-bold text-slate-900 dark:text-white tracking-wider uppercase">
@@ -51,8 +58,12 @@ export function FullscreenModal({ isOpen, onClose, title, children }: Fullscreen
         </button>
       </div>
 
-      {/* Fullscreen Body - Fits edge-to-edge */}
-      <div className="flex-1 p-4 overflow-auto custom-scrollbar bg-slate-50/50 dark:bg-navy-950">
+      {/* Fullscreen Body - 100% Edge-to-edge flush with zero margins */}
+      <div
+        className={`flex-1 overflow-auto custom-scrollbar bg-slate-50/50 dark:bg-navy-950 ${
+          noPadding ? 'p-0 m-0' : 'p-3'
+        }`}
+      >
         {children}
       </div>
     </div>

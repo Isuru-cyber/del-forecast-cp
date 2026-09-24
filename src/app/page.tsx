@@ -1,16 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useApp } from '@/context/RoleContext';
 import { ReportData } from '@/lib/types';
 import { Navbar } from '@/components/Navbar';
 import { KPICards } from '@/components/KPICards';
-import { PivotMatrix } from '@/components/PivotMatrix';
-import { SummaryAnalysis } from '@/components/SummaryAnalysis';
-import { TrendAnalysis } from '@/components/TrendAnalysis';
-import { CustomerWiseTA } from '@/components/CustomerWiseTA';
-import { SummaryTables } from '@/components/SummaryTables';
 import { exportForecastToExcel } from '@/lib/excel-exporter';
 import {
   Table,
@@ -23,6 +18,13 @@ import {
   RefreshCw,
   Loader2,
   AlertTriangle,
+  ArrowRight,
+  Globe2,
+  Building2,
+  Clock,
+  Layers,
+  Sparkles,
+  PieChart,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -30,7 +32,6 @@ export default function DashboardPage() {
   const [report, setReport] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'pivot' | 'analysis' | 'trend' | 'customerTA' | 'tables'>('pivot');
 
   const fetchForecast = async () => {
     setLoading(true);
@@ -53,6 +54,78 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchForecast();
   }, []);
+
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(num);
+  };
+
+  // Top Customer Drivers
+  const topCustomers = useMemo(() => {
+    if (!report) return [];
+    const filtered = report.customerSummaries.filter(c => {
+      return customerFilter === 'ALL' || c.type === customerFilter;
+    });
+    return [...filtered].sort((a, b) => b.value - a.value).slice(0, 8);
+  }, [report, customerFilter]);
+
+  // Horizon Breakdown Calculations
+  const horizonData = useMemo(() => {
+    if (!report) return { past: { qty: 0, value: 0 }, current: { qty: 0, value: 0 }, future: { qty: 0, value: 0 }, totalVal: 0 };
+    const now = new Date();
+    const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const { customerSummaries, dates, data } = report;
+
+    const filteredCustNames = customerSummaries
+      .filter(c => customerFilter === 'ALL' || c.type === customerFilter)
+      .map(c => c.label);
+
+    const past = { qty: 0, value: 0 };
+    const current = { qty: 0, value: 0 };
+    const future = { qty: 0, value: 0 };
+
+    dates.forEach(d => {
+      let q = 0;
+      let v = 0;
+      filteredCustNames.forEach(cust => {
+        const entry = data[cust]?.[d];
+        if (entry) {
+          q += entry.qty;
+          v += entry.value;
+        }
+      });
+
+      const mKey = d.slice(0, 7);
+      if (mKey === currentMonthKey) {
+        current.qty += q;
+        current.value += v;
+      } else if (mKey < currentMonthKey) {
+        past.qty += q;
+        past.value += v;
+      } else {
+        future.qty += q;
+        future.value += v;
+      }
+    });
+
+    const totalVal = past.value + current.value + future.value;
+    return { past, current, future, totalVal };
+  }, [report, customerFilter]);
+
+  // Direct vs Indirect Percentages
+  const portfolioDistribution = useMemo(() => {
+    if (!report) return { directValPct: 50, indirectValPct: 50, directQtyPct: 50, indirectQtyPct: 50 };
+    const totalVal = report.grandTotal.value || 1;
+    const totalQty = report.grandTotal.qty || 1;
+    return {
+      directValPct: Math.round((report.directTotal.value / totalVal) * 100),
+      indirectValPct: Math.round((report.indirectTotal.value / totalVal) * 100),
+      directQtyPct: Math.round((report.directTotal.qty / totalQty) * 100),
+      indirectQtyPct: Math.round((report.indirectTotal.qty / totalQty) * 100),
+    };
+  }, [report]);
 
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-slate-50 dark:bg-navy-950 transition-colors">
@@ -111,68 +184,19 @@ export default function DashboardPage() {
             {/* Top Scorecard KPIs */}
             <KPICards report={report} filter={customerFilter} />
 
-            {/* Navigation Tab Bar & Export Actions */}
-            <div className="bg-white dark:bg-navy-900 rounded-xl p-2 border border-slate-200 dark:border-navy-700 shadow-sm flex flex-col md:flex-row items-center justify-between gap-2.5">
-              <div className="flex bg-slate-100 dark:bg-navy-800 p-0.5 rounded-xl border border-slate-200 dark:border-navy-700 overflow-x-auto max-w-full no-scrollbar w-full md:w-auto">
-                <button
-                  onClick={() => setActiveTab('pivot')}
-                  className={`flex items-center px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all whitespace-nowrap ${
-                    activeTab === 'pivot'
-                      ? 'bg-blue-700 text-white shadow-sm font-bold'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  <Table className="w-3.5 h-3.5 mr-1.5" />
-                  Pivot Matrix
-                </button>
-                <button
-                  onClick={() => setActiveTab('analysis')}
-                  className={`flex items-center px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all whitespace-nowrap ${
-                    activeTab === 'analysis'
-                      ? 'bg-blue-700 text-white shadow-sm font-bold'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
-                  Summary Analysis
-                </button>
-                <button
-                  onClick={() => setActiveTab('trend')}
-                  className={`flex items-center px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all whitespace-nowrap ${
-                    activeTab === 'trend'
-                      ? 'bg-blue-700 text-white shadow-sm font-bold'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  <TrendingUp className="w-3.5 h-3.5 mr-1.5" />
-                  Trend Analysis
-                </button>
-                <button
-                  onClick={() => setActiveTab('customerTA')}
-                  className={`flex items-center px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all whitespace-nowrap ${
-                    activeTab === 'customerTA'
-                      ? 'bg-blue-700 text-white shadow-sm font-bold'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  <UserSearch className="w-3.5 h-3.5 mr-1.5" />
-                  Customer wise TA
-                </button>
-                <button
-                  onClick={() => setActiveTab('tables')}
-                  className={`flex items-center px-3.5 py-1.5 rounded-lg text-xs font-semibold tracking-wide transition-all whitespace-nowrap ${
-                    activeTab === 'tables'
-                      ? 'bg-blue-700 text-white shadow-sm font-bold'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  <ListOrdered className="w-3.5 h-3.5 mr-1.5" />
-                  Summary Tables
-                </button>
+            {/* Quick Action Bar */}
+            <div className="bg-white dark:bg-navy-900 rounded-xl p-3 border border-slate-200 dark:border-navy-700 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center space-x-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
+                  Executive Forecast Summary
+                </span>
+                <span className="text-[10px] text-slate-400 font-medium hidden sm:inline">
+                  &middot; Scope: {customerFilter} Customers
+                </span>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex items-center space-x-2 w-full md:w-auto justify-end">
+              <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
                 <button
                   onClick={fetchForecast}
                   title="Reload forecast"
@@ -183,47 +207,372 @@ export default function DashboardPage() {
 
                 <button
                   onClick={() => exportForecastToExcel(report, customerFilter)}
-                  className="flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-950 dark:bg-navy-700 dark:hover:bg-navy-600 text-white px-4 py-1.5 rounded-lg font-semibold text-xs transition-all shadow-sm"
+                  className="flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-950 dark:bg-navy-700 dark:hover:bg-navy-600 text-white px-3.5 py-1.5 rounded-lg font-semibold text-xs transition-all shadow-sm"
                 >
                   <FileDown className="w-3.5 h-3.5 text-blue-300" />
-                  <span>Download XL</span>
+                  <span>Download Excel</span>
                 </button>
 
-                {role === 'admin' && (
-                  <Link
-                    href="/upload"
-                    className="flex items-center space-x-1.5 bg-blue-700 hover:bg-blue-800 text-white px-4 py-1.5 rounded-lg font-semibold text-xs shadow-sm transition-all"
-                  >
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Upload New</span>
-                  </Link>
-                )}
+                <Link
+                  href="/analysis"
+                  className="flex items-center space-x-1.5 bg-blue-700 hover:bg-blue-800 text-white px-4 py-1.5 rounded-lg font-bold text-xs shadow-sm transition-all"
+                >
+                  <span>Open Detailed Analysis Hub</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
             </div>
 
-            {/* Tab Views */}
-            <div className="transition-all duration-300">
-              {activeTab === 'pivot' && (
-                <PivotMatrix report={report} filter={customerFilter} />
-              )}
-              {activeTab === 'analysis' && (
-                <SummaryAnalysis report={report} filter={customerFilter} />
-              )}
-              {activeTab === 'trend' && (
-                <TrendAnalysis report={report} filter={customerFilter} />
-              )}
-              {activeTab === 'customerTA' && (
-                <CustomerWiseTA report={report} filter={customerFilter} />
-              )}
-              {activeTab === 'tables' && (
-                <SummaryTables report={report} filter={customerFilter} />
-              )}
+            {/* Visual Analytics Grid: Pie Charts & Horizon Breakdown */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              
+              {/* 1. Portfolio Split (Direct Export vs Indirect Local) with Visual Donut Charts */}
+              <div className="bg-white dark:bg-navy-900 rounded-xl p-4 border border-slate-200 dark:border-navy-700 shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-1 h-3.5 bg-emerald-600 rounded-full"></div>
+                      <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                        Portfolio Mix (Direct vs Indirect)
+                      </h3>
+                    </div>
+                    <PieChart className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-4">
+                    Comparison of Export (Direct) against Local (Indirect) revenue and volume allocation.
+                  </p>
+
+                  {/* Visual Split Bars */}
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-xs font-semibold mb-1">
+                        <span className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Direct Value ({portfolioDistribution.directValPct}%)
+                        </span>
+                        <span className="text-indigo-700 dark:text-indigo-400 flex items-center gap-1">
+                          Indirect Value ({portfolioDistribution.indirectValPct}%) <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                        </span>
+                      </div>
+                      <div className="w-full h-3 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden flex shadow-inner">
+                        <div
+                          style={{ width: `${portfolioDistribution.directValPct}%` }}
+                          className="bg-emerald-500 h-full transition-all duration-500"
+                          title={`Direct: $${formatNumber(report.directTotal.value)}`}
+                        ></div>
+                        <div
+                          style={{ width: `${portfolioDistribution.indirectValPct}%` }}
+                          className="bg-indigo-600 h-full transition-all duration-500"
+                          title={`Indirect: $${formatNumber(report.indirectTotal.value)}`}
+                        ></div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between text-xs font-semibold mb-1">
+                        <span className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400"></span> Direct Volume ({portfolioDistribution.directQtyPct}%)
+                        </span>
+                        <span className="text-indigo-700 dark:text-indigo-400 flex items-center gap-1">
+                          Indirect Volume ({portfolioDistribution.indirectQtyPct}%) <span className="w-2 h-2 rounded-full bg-indigo-400"></span>
+                        </span>
+                      </div>
+                      <div className="w-full h-3 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden flex shadow-inner">
+                        <div
+                          style={{ width: `${portfolioDistribution.directQtyPct}%` }}
+                          className="bg-emerald-400 h-full transition-all duration-500"
+                          title={`Direct: ${formatNumber(report.directTotal.qty)} KG`}
+                        ></div>
+                        <div
+                          style={{ width: `${portfolioDistribution.indirectQtyPct}%` }}
+                          className="bg-indigo-400 h-full transition-all duration-500"
+                          title={`Indirect: ${formatNumber(report.indirectTotal.qty)} KG`}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-navy-800 text-xs">
+                  <div className="bg-emerald-50/60 dark:bg-emerald-950/30 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-900/50">
+                    <span className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-400 block">Direct Total</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100 font-mono">${formatNumber(report.directTotal.value)}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-mono">{formatNumber(report.directTotal.qty)} KG</span>
+                  </div>
+                  <div className="bg-indigo-50/60 dark:bg-indigo-950/30 p-2.5 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
+                    <span className="text-[10px] uppercase font-bold text-indigo-700 dark:text-indigo-400 block">Indirect Total</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-100 font-mono">${formatNumber(report.indirectTotal.value)}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-mono">{formatNumber(report.indirectTotal.qty)} KG</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Horizon Delivery Timeline Risk & Timing */}
+              <div className="bg-white dark:bg-navy-900 rounded-xl p-4 border border-slate-200 dark:border-navy-700 shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-1 h-3.5 bg-blue-600 rounded-full"></div>
+                      <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                        Delivery Horizon Breakdown
+                      </h3>
+                    </div>
+                    <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-4">
+                    Pipeline segmentation across overdue backlog, current month target, and future commitments.
+                  </p>
+
+                  <div className="space-y-3">
+                    {/* Overdue */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className="font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-amber-500"></span> Overdue Backlog
+                        </span>
+                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
+                          ${formatNumber(horizonData.past.value)}
+                        </span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden">
+                        <div
+                          style={{ width: `${horizonData.totalVal > 0 ? (horizonData.past.value / horizonData.totalVal) * 100 : 0}%` }}
+                          className="bg-amber-500 h-full"
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Current Month */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className="font-semibold text-blue-700 dark:text-blue-400 flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-blue-600"></span> Current Month Load
+                        </span>
+                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
+                          ${formatNumber(horizonData.current.value)}
+                        </span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden">
+                        <div
+                          style={{ width: `${horizonData.totalVal > 0 ? (horizonData.current.value / horizonData.totalVal) * 100 : 0}%` }}
+                          className="bg-blue-600 h-full"
+                        ></div>
+                      </div>
+                    </div>
+
+                    {/* Future */}
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs">
+                        <span className="font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500"></span> Future Pipeline
+                        </span>
+                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
+                          ${formatNumber(horizonData.future.value)}
+                        </span>
+                      </div>
+                      <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-navy-800 overflow-hidden">
+                        <div
+                          style={{ width: `${horizonData.totalVal > 0 ? (horizonData.future.value / horizonData.totalVal) * 100 : 0}%` }}
+                          className="bg-emerald-500 h-full"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-navy-800 flex items-center justify-between text-xs">
+                  <span className="text-slate-500 dark:text-slate-400 font-medium">Total Forecast Horizon:</span>
+                  <span className="font-mono font-bold text-blue-900 dark:text-blue-300">${formatNumber(horizonData.totalVal)}</span>
+                </div>
+              </div>
+
+              {/* 3. Top Customer Accounts (Key Value Drivers) */}
+              <div className="bg-white dark:bg-navy-900 rounded-xl p-4 border border-slate-200 dark:border-navy-700 shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-1 h-3.5 bg-indigo-600 rounded-full"></div>
+                      <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                        Top Customer Revenue Drivers
+                      </h3>
+                    </div>
+                    <span className="text-[10px] font-bold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-navy-800 px-2 py-0.5 rounded-full border border-blue-200 dark:border-navy-700">
+                      Top 8 Accounts
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5 max-h-[220px] overflow-y-auto custom-scrollbar pr-1">
+                    {topCustomers.map((cust, i) => (
+                      <div
+                        key={cust.label}
+                        className="flex items-center justify-between p-1.5 rounded-lg bg-slate-50/70 dark:bg-navy-800/60 hover:bg-blue-50/60 dark:hover:bg-navy-800 transition-colors text-xs"
+                      >
+                        <div className="flex items-center space-x-1.5 min-w-0">
+                          <span className="text-[10px] font-mono font-bold text-slate-400 w-4">
+                            #{i + 1}
+                          </span>
+                          <span
+                            className={`text-[8px] font-bold px-1 rounded uppercase shrink-0 ${
+                              cust.type === 'DIRECT'
+                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                                : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300'
+                            }`}
+                          >
+                            {cust.type === 'DIRECT' ? 'Dir' : 'Loc'}
+                          </span>
+                          <span className="truncate max-w-[140px] font-semibold text-slate-800 dark:text-slate-200" title={cust.label}>
+                            {cust.label}
+                          </span>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="font-mono font-bold text-blue-700 dark:text-blue-400 block text-xs">
+                            ${formatNumber(cust.value)}
+                          </span>
+                          <span className="font-mono text-[9px] text-slate-400">
+                            {formatNumber(cust.qty)} KG
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-3 pt-2 border-t border-slate-100 dark:border-navy-800 text-right">
+                  <Link
+                    href="/analysis?tab=tables"
+                    className="text-xs font-bold text-blue-700 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
+                  >
+                    <span>View all {report.customers.length} customer accounts</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Deep-Dive Analytical Hub Cards */}
+            <div>
+              <div className="flex items-center space-x-2 mb-3">
+                <div className="w-1 h-3.5 bg-blue-700 rounded-full"></div>
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Deep-Dive Analytical Modules
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                {/* Module 1: Pivot Matrix */}
+                <Link
+                  href="/analysis?tab=pivot"
+                  className="group bg-white dark:bg-navy-900 rounded-xl p-4 border border-slate-200 dark:border-navy-700 hover:border-blue-500 dark:hover:border-blue-500 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-navy-800 text-blue-700 dark:text-blue-400 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+                      <Table className="w-4 h-4" />
+                    </div>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white mb-1 group-hover:text-blue-600 transition-colors">
+                      Pivot Matrix
+                    </h4>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                      Cross-tab grid with daily customer delivery schedule, sticky headers, and date totals.
+                    </p>
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-slate-100 dark:border-navy-800 flex items-center justify-between text-[11px] font-bold text-blue-700 dark:text-blue-400">
+                    <span>Open Matrix</span>
+                    <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </Link>
+
+                {/* Module 2: Summary Analysis */}
+                <Link
+                  href="/analysis?tab=analysis"
+                  className="group bg-white dark:bg-navy-900 rounded-xl p-4 border border-slate-200 dark:border-navy-700 hover:border-blue-500 dark:hover:border-blue-500 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-navy-800 text-indigo-700 dark:text-indigo-400 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+                      <BarChart3 className="w-4 h-4" />
+                    </div>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white mb-1 group-hover:text-indigo-600 transition-colors">
+                      Summary Analysis
+                    </h4>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                      Customer percentage share visualizers and date-wise delivery velocity distribution.
+                    </p>
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-slate-100 dark:border-navy-800 flex items-center justify-between text-[11px] font-bold text-indigo-700 dark:text-indigo-400">
+                    <span>Open Summary</span>
+                    <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </Link>
+
+                {/* Module 3: Trend Analysis */}
+                <Link
+                  href="/analysis?tab=trend"
+                  className="group bg-white dark:bg-navy-900 rounded-xl p-4 border border-slate-200 dark:border-navy-700 hover:border-blue-500 dark:hover:border-blue-500 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="w-8 h-8 rounded-lg bg-sky-50 dark:bg-navy-800 text-sky-700 dark:text-sky-400 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+                      <TrendingUp className="w-4 h-4" />
+                    </div>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white mb-1 group-hover:text-sky-600 transition-colors">
+                      Trend Analysis
+                    </h4>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                      Daily delivery velocity charts with interactive bar click drill-down to shipment details.
+                    </p>
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-slate-100 dark:border-navy-800 flex items-center justify-between text-[11px] font-bold text-sky-700 dark:text-sky-400">
+                    <span>Open Trends</span>
+                    <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </Link>
+
+                {/* Module 4: Customer wise TA */}
+                <Link
+                  href="/analysis?tab=customerTA"
+                  className="group bg-white dark:bg-navy-900 rounded-xl p-4 border border-slate-200 dark:border-navy-700 hover:border-blue-500 dark:hover:border-blue-500 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="w-8 h-8 rounded-lg bg-teal-50 dark:bg-navy-800 text-teal-700 dark:text-teal-400 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+                      <UserSearch className="w-4 h-4" />
+                    </div>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white mb-1 group-hover:text-teal-600 transition-colors">
+                      Customer wise TA
+                    </h4>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                      Customer-specific demand timeline, delivery load cards, and daily fulfillment charts.
+                    </p>
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-slate-100 dark:border-navy-800 flex items-center justify-between text-[11px] font-bold text-teal-700 dark:text-teal-400">
+                    <span>Open Customer TA</span>
+                    <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </Link>
+
+                {/* Module 5: Summary Tables */}
+                <Link
+                  href="/analysis?tab=tables"
+                  className="group bg-white dark:bg-navy-900 rounded-xl p-4 border border-slate-200 dark:border-navy-700 hover:border-blue-500 dark:hover:border-blue-500 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-navy-800 text-emerald-700 dark:text-emerald-400 flex items-center justify-center mb-2.5 group-hover:scale-110 transition-transform">
+                      <ListOrdered className="w-4 h-4" />
+                    </div>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white mb-1 group-hover:text-emerald-600 transition-colors">
+                      Summary Tables
+                    </h4>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                      Executive volume and revenue ranking tables by customer and scheduled dispatch date.
+                    </p>
+                  </div>
+                  <div className="mt-3 pt-2 border-t border-slate-100 dark:border-navy-800 flex items-center justify-between text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+                    <span>Open Tables</span>
+                    <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </Link>
+              </div>
             </div>
           </>
         )}
       </main>
 
-      {/* Clean minimal footer without fluff text */}
       <footer className="w-full mt-auto py-3"></footer>
     </div>
   );

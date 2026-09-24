@@ -8,14 +8,31 @@ html {
   font-size: 13.5px; /* ~85% scale for compact executive data density */
 }
 
-* {
+*,
+body,
+button,
+input,
+select,
+textarea,
+table,
+th,
+td,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+div {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code, pre, .font-mono {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', monospace !important;
 }
 
 /* Custom scrollbars */
@@ -47,38 +64,28 @@ code, pre, .font-mono {
 
 /* Sticky Pivot Grid */
 .pivot-container {
-  max-height: 72vh;
   overflow: auto;
 }
-.sticky-col-cust {
-  position: sticky;
-  left: 0;
-  z-index: 25;
-}
-.sticky-header-row {
-  position: sticky;
-  top: 0;
-  z-index: 35;
-}
-.sticky-corner-cell {
-  position: sticky;
-  top: 0;
-  left: 0;
-  z-index: 50;
+
+.pivot-container table {
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
-/* Theme Variant Custom Overrides */
-html.theme-navy {
-  --color-canvas: #0b132b;
-  --color-surface: #132238;
+.pivot-container th,
+.pivot-container td {
+  background-clip: padding-box;
 }
 
-html.theme-slate {
-  --color-canvas: #0f172a;
-  --color-surface: #1e293b;
+/* Theme Variant Background Support */
+html.dark.theme-navy body {
+  background-color: #070d1b;
 }
 
-html.theme-emerald {
-  --color-canvas: #051811;
-  --color-surface: #0b291d;
+html.dark.theme-slate body {
+  background-color: #0f172a;
+}
+
+html.dark.theme-emerald body {
+  background-color: #051811;
 }

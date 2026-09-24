@@ -168,8 +168,11 @@ export function SummaryAnalysis({ report, filter }: SummaryAnalysisProps) {
         isOpen={isFullscreen}
         onClose={() => setIsFullscreen(false)}
         title={`Summary Analysis Share Visualizer (${filter} Customers)`}
+        noPadding={false}
       >
-        {renderContent()}
+        <div className="p-4">
+          {renderContent()}
+        </div>
       </FullscreenModal>
     </>
   );

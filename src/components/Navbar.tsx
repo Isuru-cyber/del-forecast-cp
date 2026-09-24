@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import Link from 'next/navigation';
+import LinkComponent from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useApp, AppTheme } from '@/context/RoleContext';
 import {
@@ -16,6 +17,7 @@ import {
   Layers,
   Palette,
   Check,
+  LineChart,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -45,11 +47,11 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
     }
   };
 
-  const themes: { id: AppTheme; label: string; icon: string; dot: string }[] = [
-    { id: 'light', label: 'Corporate Light (Default)', icon: '☀️', dot: 'bg-blue-600' },
-    { id: 'navy', label: 'Midnight Navy', icon: '🌙', dot: 'bg-[#1e3a8a]' },
-    { id: 'dark', label: 'Slate Charcoal', icon: '🌑', dot: 'bg-slate-700' },
-    { id: 'emerald', label: 'Emerald Prestige', icon: '🌲', dot: 'bg-emerald-700' },
+  const themes: { id: AppTheme; label: string; icon: string }[] = [
+    { id: 'light', label: 'Corporate Light (Default)', icon: '☀️' },
+    { id: 'navy', label: 'Midnight Navy', icon: '🌙' },
+    { id: 'dark', label: 'Slate Charcoal', icon: '🌑' },
+    { id: 'emerald', label: 'Emerald Prestige', icon: '🌲' },
   ];
 
   return (
@@ -57,11 +59,13 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
       <div className="max-w-[1750px] mx-auto px-4 sm:px-6">
         <div className="flex flex-col md:flex-row items-center justify-between py-2.5 gap-2.5">
           
-          {/* Logo / Brand Name: All Capital, Bold, Matching Executive Gradient */}
+          {/* Logo / Brand Name: ALL CAPITAL, BOLD, EXECUTIVE CORPORATE GRADIENT */}
           <div className="flex items-center">
-            <h1 className="font-extrabold tracking-wider bg-gradient-to-r from-blue-800 via-indigo-600 to-blue-900 dark:from-blue-400 dark:via-sky-300 dark:to-indigo-300 bg-clip-text text-transparent text-sm sm:text-base uppercase select-none">
-              DELIVERY FORECAST - CP
-            </h1>
+            <LinkComponent href="/" className="hover:opacity-95 transition-opacity">
+              <h1 className="font-extrabold tracking-wider bg-gradient-to-r from-blue-800 via-indigo-600 to-blue-900 dark:from-blue-400 dark:via-sky-300 dark:to-indigo-300 bg-clip-text text-transparent text-sm sm:text-base uppercase select-none">
+                DELIVERY FORECAST - CP
+              </h1>
+            </LinkComponent>
           </div>
 
           {/* Center: Direct / Indirect Global Filter Buttons */}
@@ -112,45 +116,57 @@ export function Navbar({ lastUpdated, uploadedBy }: NavbarProps) {
               </div>
             )}
 
-            {/* Nav Links */}
+            {/* Nav Links: Dashboard, Analysis, Customers, Upload */}
             <div className="flex items-center space-x-0.5 bg-slate-100 dark:bg-navy-800 p-0.5 rounded-xl border border-slate-200 dark:border-navy-700">
-              <Link
+              <LinkComponent
                 href="/"
                 className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                   pathname === '/'
-                    ? 'bg-blue-700 text-white shadow-sm'
+                    ? 'bg-blue-700 text-white shadow-sm font-bold'
                     : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-navy-700'
                 }`}
               >
                 <LayoutDashboard className="w-3.5 h-3.5" />
                 <span>Dashboard</span>
-              </Link>
+              </LinkComponent>
+
+              <LinkComponent
+                href="/analysis"
+                className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  pathname === '/analysis'
+                    ? 'bg-blue-700 text-white shadow-sm font-bold'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-navy-700'
+                }`}
+              >
+                <LineChart className="w-3.5 h-3.5" />
+                <span>Analysis</span>
+              </LinkComponent>
 
               {role === 'admin' && (
                 <>
-                  <Link
+                  <LinkComponent
                     href="/customers"
                     className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                       pathname === '/customers'
-                        ? 'bg-blue-700 text-white shadow-sm'
+                        ? 'bg-blue-700 text-white shadow-sm font-bold'
                         : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-navy-700'
                     }`}
                   >
                     <Users className="w-3.5 h-3.5" />
                     <span>Customers</span>
-                  </Link>
+                  </LinkComponent>
 
-                  <Link
+                  <LinkComponent
                     href="/upload"
                     className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                       pathname === '/upload'
-                        ? 'bg-blue-700 text-white shadow-sm'
+                        ? 'bg-blue-700 text-white shadow-sm font-bold'
                         : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-navy-700'
                     }`}
                   >
                     <Upload className="w-3.5 h-3.5" />
                     <span>Upload</span>
-                  </Link>
+                  </LinkComponent>
                 </>
               )}
             </div>

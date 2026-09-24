@@ -182,8 +182,11 @@ export function SummaryTables({ report, filter }: SummaryTablesProps) {
         isOpen={isFullscreen}
         onClose={() => setIsFullscreen(false)}
         title={`Summary Tables (${filter} Customers)`}
+        noPadding={false}
       >
-        {renderContent()}
+        <div className="p-4">
+          {renderContent()}
+        </div>
       </FullscreenModal>
     </div>
   );

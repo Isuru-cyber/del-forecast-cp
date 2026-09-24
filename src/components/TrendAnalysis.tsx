@@ -294,11 +294,17 @@ export function TrendAnalysis({ report, filter }: TrendAnalysisProps) {
               <span>Back to Full Month</span>
             </button>
             <div>
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
-                Delivery Breakdown &middot; {formatFullDate(drilldownData.date)}
-              </h4>
-              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                Showing all shipments scheduled for this date ({filter === 'ALL' ? 'All Customers' : `${filter} Customers`})
+              <div className="flex items-center space-x-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-blue-800 dark:text-blue-400">
+                  Delivery Breakdown
+                </span>
+                <span className="text-slate-300 dark:text-navy-600">&bull;</span>
+                <span className="text-xs font-bold text-slate-900 dark:text-white">
+                  {formatFullDate(drilldownData.date)}
+                </span>
+              </div>
+              <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">
+                Showing all shipments scheduled for this date ({filter === 'ALL' ? 'ALL Customers' : `${filter} Customers`})
               </p>
             </div>
           </div>
@@ -378,7 +384,7 @@ export function TrendAnalysis({ report, filter }: TrendAnalysisProps) {
               </tbody>
               <tfoot className="bg-slate-100/90 dark:bg-navy-900 border-t-2 border-slate-200 dark:border-navy-700 font-mono text-xs">
                 <tr>
-                  <td colSpan={2} className="px-5 py-3 font-bold text-slate-900 dark:text-white uppercase font-sans">
+                  <td colSpan={2} className="px-5 py-3 font-bold text-slate-900 dark:text-white uppercase">
                     Date Total ({formatFullDate(drilldownData.date)})
                   </td>
                   <td className="px-4 py-3 text-right font-bold text-slate-900 dark:text-white">

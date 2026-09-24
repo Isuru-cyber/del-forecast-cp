@@ -362,8 +362,11 @@ export function CustomerWiseTA({ report, filter }: CustomerWiseTAProps) {
         isOpen={isFullscreen}
         onClose={() => setIsFullscreen(false)}
         title={`Customer Analysis: ${selectedCustomer}`}
+        noPadding={false}
       >
-        {renderContent()}
+        <div className="p-4">
+          {renderContent()}
+        </div>
       </FullscreenModal>
     </>
   );
